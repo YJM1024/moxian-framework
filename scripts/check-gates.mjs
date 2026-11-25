@@ -13,6 +13,9 @@
  *   MX-G-09 首部字段：状态、Implements、Covers、Change、变更类型、Owner 必须非空；
  *           状态取七值，存量 draft/partial/blocked/accepted 记 warn；
  *           变更类型取 TASK-MATRIX 八类，旧分类词（增量型/建域型）记 warn；
+ *           Covers 编号对新包要求三段式 AC-<域>-<子域>-<序号>，对 CHG-LEGACY-*
+ *           与归档包同时接受两段式 AC-<域>-<序号>；历史验收项编号已冻结，改名
+ *           等于改冻结 AC，补编号等于伪造，故只对历史包放宽，避免掩盖新包问题；
  *           change.md 十节模板的 变更号/标题/负责人/判级/创建日期/关闭日期 对
  *           旧格式包记 warn，对十节格式包记 error。
  *   MX-G-10 必填节：旧格式按 GATES 与 docs/templates/spec.md 的八节，
@@ -65,8 +68,15 @@ import { fileURLToPath } from 'node:url'
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 const DEFAULT_ROOT = resolve(SCRIPT_DIR, '..')
 const GATE = 'STRUCT'
+// AC 编号有两种历史形态：新包用三段式 AC-<域>-<子域>-<序号>（如 AC-CONV-005-02），
+// CHG-LEGACY-* 等历史包的冻结验收项用两段式 AC-<域>-<序号>（如 AC-P5-01）。
+// 两段式编号随历史验收项冻结，改名等于改冻结 AC，补编号等于伪造，因此 MX-G-09 的
+// Covers 校验对历史包同时接受两段式与三段式；新包仍只认三段式，避免放宽后把新包的
+// 缺段编号当成合法。历史包判定沿用 isLegacyPackage：目录名以 CHG-LEGACY- 开头，
+// 或首部状态含 historical/archived/归档。
 const AC_RE = /AC-(?:[A-Z0-9]+-){2,}\d+/g
 const AC_ONE_RE = /AC-(?:[A-Z0-9]+-){2,}\d+/
+const AC_LEGACY_RE = /AC-(?:[A-Z0-9]+-){1,}\d+/g
 const DATE_RE = /\b20\d{2}-\d{2}-\d{2}\b/
 const NA_RE = /N\/A\s*[:：]\s*(?:([^：:，,。；;\s]+)\s*[:：]\s*)?(.{8,})/
 const SEVEN_STATES = ['草稿', '进行中', '待验收', '已验收', '异常', '已回滚', '已关闭']
@@ -527,7 +537,10 @@ function runMxG09(run, pkg) {
       }
     }
     if (label === 'Covers') {
-      const ids = cleanInline(hit.value).match(AC_RE) ?? []
+      // 历史包允许两段式，新包只认三段式；两种形态见文件头部 AC 编号注释与
+      // AC_LEGACY_RE 定义处的判定理由。
+      const idRe = pkg.legacy ? AC_LEGACY_RE : AC_RE
+      const ids = cleanInline(hit.value).match(idRe) ?? []
       if (ids.length === 0) {
         problems += 1
         record(check, run, {
@@ -536,9 +549,13 @@ function runMxG09(run, pkg) {
           path: pkg.specRel,
           line: hit.line,
           item: '首部字段',
-          expected: 'Covers 至少含 1 个 AC 编号',
+          expected: pkg.legacy
+            ? 'Covers 至少含 1 个 AC 编号（历史包允许两段式，新包必须三段式）'
+            : 'Covers 至少含 1 个 AC 编号（三段式）',
           actual: cleanInline(hit.value).slice(0, 60) || '空',
-          hint: '按 AC-(?:[A-Z0-9]+-){2,}\\d+ 格式补编号',
+          hint: pkg.legacy
+            ? '按 AC-(?:[A-Z0-9]+-){1,}\\d+（两段式）或 AC-(?:[A-Z0-9]+-){2,}\\d+（三段式）格式补编号'
+            : '按 AC-(?:[A-Z0-9]+-){2,}\\d+ 三段式格式补编号',
           message: 'Covers 无合法 AC 编号',
         })
       }
@@ -1663,6 +1680,20 @@ function buildSelfTestFixtures(base) {
   writeFixture(fail, 'specs/changes/CHG-GATE-102/test-plan.md', fixturePassTestPlan().replaceAll('CHG-GATE-101', 'CHG-GATE-102').replaceAll('AC-GATE-101', 'AC-GATE-102'))
   writeFixture(fail, 'specs/changes/CHG-GATE-102/evidence.md', fixturePassEvidence().replaceAll('CHG-GATE-101', 'CHG-GATE-102').replaceAll('AC-GATE-101', 'AC-GATE-102'))
   writeFixture(fail, 'specs/changes/CHG-GATE-103/spec.md', fixtureFailSpecMissingFiles())
+
+  // AC 编号形态夹具：同一个两段式编号在历史包与新包上必须得到相反判定，
+  // 三段式在新包上仍判通过，覆盖 MX-G-09 Covers 校验的 legacy 分支。
+  const acFormat = join(base, 'ac-format')
+  const writeAcFormatPackage = (root, name, covers) => {
+    const rewrite = (text) =>
+      text.replaceAll('CHG-GATE-101', name).replaceAll('AC-GATE-101-01', covers)
+    writeFixture(root, `specs/changes/${name}/spec.md`, rewrite(fixturePassSpec()))
+    writeFixture(root, `specs/changes/${name}/tasks.md`, rewrite(fixturePassTasks()))
+    writeFixture(root, `specs/changes/${name}/test-plan.md`, rewrite(fixturePassTestPlan()))
+    writeFixture(root, `specs/changes/${name}/evidence.md`, rewrite(fixturePassEvidence()))
+  }
+  writeAcFormatPackage(acFormat, 'CHG-LEGACY-GATE-201', 'AC-P5-01')
+  writeAcFormatPackage(acFormat, 'CHG-GATE-202', 'AC-P5-01')
 }
 
 function signature(run) {
@@ -1676,6 +1707,7 @@ function runSelfTest(options = {}) {
   const base = join(DEFAULT_ROOT, '.tmp', 'gate-self-test', 'struct')
   const passRoot = join(base, 'pass')
   const failRoot = join(base, 'fail')
+  const acFormatRoot = join(base, 'ac-format')
   const assertions = []
   const line = (passed, text) => {
     assertions.push({ passed, text })
@@ -1688,6 +1720,33 @@ function runSelfTest(options = {}) {
     const passErrors = passRun.findings.filter((finding) => finding.severity === 'error').length
     line(passErrors === 0, `通过样例 error 数 期望 0 实际 ${passErrors}`)
     line(passRun.packages === 1, `通过样例包数 期望 1 实际 ${passRun.packages}`)
+
+    // 编号形态：两段式只在历史包通过，新包仍须三段式。
+    const acFormatRun = runStructure(acFormatRoot, { stage: 'change', change: null })
+    const coversProblemFor = (prefix) =>
+      acFormatRun.findings.filter(
+        (finding) =>
+          finding.rule === 'MX-G-09' &&
+          finding.message === 'Covers 无合法 AC 编号' &&
+          finding.path.startsWith(prefix),
+      )
+    const legacyCovers = coversProblemFor('specs/changes/CHG-LEGACY-GATE-201/')
+    line(
+      legacyCovers.length === 0,
+      `历史包两段式 Covers 判定 期望 通过 实际 ${legacyCovers.length} 条告警`,
+    )
+    const newCovers = coversProblemFor('specs/changes/CHG-GATE-202/')
+    line(
+      newCovers.length === 1 && newCovers[0].severity === 'error',
+      `非历史包两段式 Covers 判定 期望 1 条 error 实际 ${newCovers.length} 条告警`,
+    )
+    const strictCovers = passRun.findings.filter(
+      (finding) => finding.rule === 'MX-G-09' && finding.message === 'Covers 无合法 AC 编号',
+    )
+    line(
+      strictCovers.length === 0,
+      `新包三段式 Covers 判定 期望 通过 实际 ${strictCovers.length} 条告警`,
+    )
 
     const failRun = runStructure(failRoot, { stage: 'change', change: null })
     const failErrors = failRun.findings.filter((finding) => finding.severity === 'error').length

@@ -1,7 +1,7 @@
 # CONV 域契约表
 
 状态：草稿
-版本：v0.1
+版本：v0.2
 冻结日期：—
 owner：产品、设计、前端、后端、测试与验收（见 specs/changes/CHG-CONV-007/spec.md:9）
 变更单号：CHG-CONV-006、CHG-CONV-007（草稿未冻结）
@@ -12,6 +12,8 @@ owner：产品、设计、前端、后端、测试与验收（见 specs/changes/
 最后更新：2026-11-25
 
 本表按 `scripts/check-contract.mjs` 校验的六类（数据形状、状态机、错误码、事件与消息、界面几何与选择器、验收入口）建模。模板第 7–11 类（设计令牌、命令行契约、数据分布、租户与授权、发布与签名）本次变更不涉及，未建。表首字段供脚本读取，状态取 `草稿`，待前端、后端、测试三列实现并冻结后再改 `冻结`。
+
+v0.2（2026-11-25）只动类 1 与类 5：类 1 补 CT-CONV-060 至 CT-CONV-097 共 38 行，覆盖 §5.1、§8.1 的 HTTP 形状与 §17.2、§17.5 的数据模型列；类 5 把选择器从末列移回 `选择器或aria` 列，与设计 §17.2.7、前端 §17.2.1 同值。类 2、类 3、类 4、类 6 未改，51 条 AC 不变。
 
 ## 五列对应
 
@@ -27,7 +29,7 @@ owner：产品、设计、前端、后端、测试与验收（见 specs/changes/
 
 ## 类 1 数据形状
 
-字段名为 N1–N9 契约里实际出现的字段，来源均为后端 §17.4 的请求/响应表。`§17.2` 的建表说明不在本表重复，只列接口形状。
+字段名取后端 spec 里实际出现的字段：CT-CONV-001 至 CT-CONV-029 来自 §17.4 的请求/响应表，CT-CONV-060 至 CT-CONV-097 补齐 §5.1、§8.1 的 HTTP 形状与 §17.2、§17.5 的数据模型列。建表语句、索引与迁移版本不在本表重复，只登记字段名、类型与边界。
 
 | 编号 | 概念 | 实体或端点 | 字段路径 | 类型 | 可空 | 默认值 | 枚举取值或边界 | 来源 |
 |---|---|---|---|---|---|---|---|---|
@@ -60,6 +62,46 @@ owner：产品、设计、前端、后端、测试与验收（见 specs/changes/
 | CT-CONV-027 | 交付物列表响应 | `GET /api/sessions/{id}/deliverables` | `groups` | object[] | 否 | `[]` | 分组数组 | 后端 §17.4.1 N9 响应 |
 | CT-CONV-028 | 交付物列表响应 | `GET /api/sessions/{id}/deliverables` | `files` | object[] | 否 | `[]` | 文件数组 | 后端 §17.4.1 N9 响应 |
 | CT-CONV-029 | 交付物列表响应 | `GET /api/sessions/{id}/deliverables` | `fileCount` | number | 否 | `0` | 整数 | 后端 §17.4.1 N9 响应 |
+| CT-CONV-060 | 会话消息发送请求 | `POST /api/chat` | `sessionId` | string | 是 | `main` | 会话 id；缺省 `main` | 后端 §5.1 请求体 |
+| CT-CONV-061 | 会话消息发送请求 | `POST /api/chat` | `text` | string | 条件必填 | 空串 | TrimSpace 后非空或至少 1 个附件；UTF-8 字符数 ≤4000 | 后端 §5.1 请求体 |
+| CT-CONV-062 | 会话消息发送请求 | `POST /api/chat` | `attachments` | string[] | 是 | `[]` | 最多 5 个 upload id，须属于该会话 | 后端 §5.1 请求体 |
+| CT-CONV-063 | 会话消息发送请求 | `POST /api/chat` | `replyToMessageId` | string | 是 | 空串 | 引用消息 id；不存在或跨会话返回 400 | 后端 §5.1 请求体 |
+| CT-CONV-064 | 会话投影响应 | `GET /api/sessions/{id}/spec-projection` | `status` | string | 否 | 无 | `draft`、`active`、`completed`、`archived`；`sessions.archived!=0` 强制 `archived` | 后端 §8.1 响应 |
+| CT-CONV-065 | 会话投影响应 | `GET /api/sessions/{id}/spec-projection` | `revision` | number | 否 | `0` | 整数，每次 spec 更新加 1 | 后端 §8.1 响应 |
+| CT-CONV-066 | 会话投影响应 | `GET /api/sessions/{id}/spec-projection` | `updatedAt` | number | 否 | `0` | 毫秒时间戳 | 后端 §8.1 响应 |
+| CT-CONV-067 | 会话投影响应 | `GET /api/sessions/{id}/spec-projection` | `pendingConfirmations` | object | 否 | `{total,items,hasMore}` | 待确认项合计，各来源最多 3 条 | 后端 §8.1 响应 |
+| CT-CONV-068 | 会话投影响应 | `GET /api/sessions/{id}/spec-projection` | `links` | object | 否 | 无 | `fullSpec` 与 `self` 两个链接 | 后端 §8.1 响应 |
+| CT-CONV-069 | 任务模型 | `tasks` 表 | `inputsJson` | string | 否 | `[]` | JSON 字符串数组，≤20 条 | 后端 §17.2.1 |
+| CT-CONV-070 | 任务模型 | `tasks` 表 | `constraintsJson` | string | 否 | `[]` | JSON 字符串数组，≤20 条 | 后端 §17.2.1 |
+| CT-CONV-071 | 任务模型 | `tasks` 表 | `contextJson` | string | 否 | `{}` | 键固定为 `goal`、`inputs`、`constraints`、`historyCount`、`sessionId` | 后端 §17.2.1 |
+| CT-CONV-072 | 任务模型 | `tasks` 表 | `waitingReason` | string | 否 | 空串 | 空串、`dependency`、`confirmation`、`resource` | 后端 §17.2.1 |
+| CT-CONV-073 | 任务模型 | `tasks` 表 | `waitingSince` | number | 否 | `0` | 进入等待的毫秒时间戳，退出等待清 0 | 后端 §17.2.1 |
+| CT-CONV-074 | 任务模型 | `tasks` 表 | `startedAt` | number | 否 | `0` | 首次进入 `running` 的时间，重试不重置 | 后端 §17.2.1 |
+| CT-CONV-075 | 任务模型 | `tasks` 表 | `finishedAt` | number | 否 | `0` | 首次进入 `done`、`failed`、`cancelled` 的时间，重试清 0 | 后端 §17.2.1 |
+| CT-CONV-076 | 任务模型 | `tasks` 表 | `failReason` | string | 否 | 空串 | 最近一次失败原因，≤500 字，重试成功后清空 | 后端 §17.2.1 |
+| CT-CONV-077 | 任务模型 | `tasks` 表 | `deadlineAt` | number | 否 | `0` | 用户时限毫秒时间戳，0 表示未设；只提醒不取消 | 后端 §17.2.1 |
+| CT-CONV-078 | 任务模型 | `tasks` 表 | `deadlineRemindedAt` | number | 否 | `0` | 时限提醒已发送的时间，保证只发一次 | 后端 §17.2.1 |
+| CT-CONV-079 | 任务模型 | `tasks` 表 | `triggerCount` | number | 否 | `0` | 被依赖触发启动的累计次数，`each` 下等于已完成前置数 | 后端 §17.2.1 |
+| CT-CONV-080 | 任务步骤 | `task_steps` 表 | `taskId` | string | 否 | 无 | 所属任务 id | 后端 §17.2.2 |
+| CT-CONV-081 | 任务步骤 | `task_steps` 表 | `seq` | number | 否 | 无 | 同一任务内从 1 连续递增且唯一 | 后端 §17.2.2 |
+| CT-CONV-082 | 任务步骤 | `task_steps` 表 | `title` | string | 否 | 无 | 步骤名，≤200 字 | 后端 §17.2.2 |
+| CT-CONV-083 | 任务步骤 | `task_steps` 表 | `summary` | string | 是 | 空串 | 步骤摘要，≤200 字 | 后端 §17.2.2 |
+| CT-CONV-084 | 任务轨迹 | `task_traces` 表 | `stepId` | string | 是 | 空串 | 所属步骤；`explore` 模式与步骤外动作留空 | 后端 §17.2.3 |
+| CT-CONV-085 | 任务轨迹 | `task_traces` 表 | `category` | string | 否 | 无 | `think`、`action`、`observe` | 后端 §17.2.3 |
+| CT-CONV-086 | 任务轨迹 | `task_traces` 表 | `tool` | string | 是 | 空串 | `action` 与 `observe` 的工具名，其它类别为空 | 后端 §17.2.3 |
+| CT-CONV-087 | 任务轨迹 | `task_traces` 表 | `at` | number | 否 | 无 | 发生时间毫秒时间戳 | 后端 §17.2.3 |
+| CT-CONV-088 | 任务批次 | `task_batches` 表 | `taskCount` | number | 否 | 无 | 批内任务数，1–12 | 后端 §17.2.4 |
+| CT-CONV-089 | 任务批次 | `task_batches` 表 | `createdAt` | number | 否 | 无 | 创建时间毫秒时间戳 | 后端 §17.2.4 |
+| CT-CONV-090 | 任务依赖 | `task_deps` 表 | `depId` | string | 否 | 无 | 前置任务 id，同会话同批次 | 后端 §17.2.5 |
+| CT-CONV-091 | 任务依赖 | `task_deps` 表 | `joinMode` | string | 否 | `all` | `all`、`any`、`each`，同一等待方全部入边一致 | 后端 §17.2.5 |
+| CT-CONV-092 | 任务创建请求 | `POST /api/sessions/{id}/tasks` | `tasks[].key` | string | 是 | 按 `t1`、`t2` 依次生成 | 批内唯一；重复返回 400 `invalid_argument` | 后端 §17.4.1 N1 请求体 |
+| CT-CONV-093 | 任务创建请求 | `POST /api/sessions/{id}/tasks` | `tasks[].dependsOn` | string[] | 是 | `[]` | 批内其它任务的 `key`；自依赖、环、跨批次返回 400 | 后端 §17.4.1 N1 请求体 |
+| CT-CONV-094 | 任务详情响应 | `GET /api/sessions/{id}/tasks/{taskId}` | `tracesHasMore` | bool | 否 | `false` | 轨迹是否被截断 | 后端 §17.4.1 N3 响应 |
+| CT-CONV-095 | 任务卡片消息 | `messages` 表 | `role` | string | 否 | `agent` | 与消息流其它智能体消息一致，不新增角色 | 后端 §17.5.1 |
+| CT-CONV-096 | 任务卡片消息 | `messages` 表 | `internal` | number | 否 | `0` | `0` 为用户可见，`1` 为内部消息 | 后端 §17.5.1 |
+| CT-CONV-097 | 任务卡片消息 | `messages` 表 | `displayStatus` | string | 否 | 无 | `pending`、`running`、`done`、`failed` 四展示态，四态之和等于节点总数 | 后端 §17.3.1 与 §17.5.3 WS 载荷 |
+
+本段 CT-CONV-060 至 CT-CONV-068 是 HTTP 线上形状，CT-CONV-069 至 CT-CONV-097 是数据模型与消息表列，字段路径按后端列名归一后的驼峰写法登记；两侧归一后同名，脚本按归一化名比对。
 
 ## 类 2 状态机
 
@@ -145,15 +187,15 @@ owner：产品、设计、前端、后端、测试与验收（见 specs/changes/
 
 ## 类 5 界面几何与选择器
 
-五个选择器取自前端 §17.2.1 的选择器表，尺寸数值与设计 §17.2.1、§17.13 的像素值一致。`选择器或aria` 列暂留空：设计 spec §0.1 的「产品锚点」表头命中脚本的 `/锚点/` 规则，抽取结果是 `specs/product/P1-CONV/spec.md:56` 这类文件引用而不是 DOM 选择器；脚本要求契约选择器同时是设计列与前端列的子集，两侧交集为空，任何真实选择器都会报不一致。按禁止改门禁判定与禁止改既有 spec 正文的约束，五个选择器原样转写在末列，`选择器或aria` 空置，MX-G-30 只报两侧多出项的 warning；待设计列把选择器表与文件引用表分开后，再把选择器移回该列。元素名写全称，避免与正文里「竖条」「面板」等泛称行的其他像素值混淆。
+五个选择器同时取自设计 §17.2.7 的「DOM 锚点」表与前端 §17.2.1 的选择器表，两侧值相同、顺序相同；尺寸数值与设计 §17.2.1、§17.13 的像素值一致。设计侧原先把文件:行引用填在「产品锚点」列，该列已更名为「产品出处」，与 DOM 锚点表分开，选择器不再被文件引用混淆。元素名写全称，避免与正文里「竖条」「面板」等泛称行的其他像素值混淆。
 
-| 编号 | 元素 | 选择器或aria | 属性 | 数值 | 单位 | 断点 | 容差 | token | 备注（不上机比对） | 选择器转写（不参与脚本比对） |
-|---|---|---|---|---|---|---|---|---|---|---|
-| CT-CONV-301 | 右栏导航竖条 |  | 宽度 | 40 | px | 全宽档与 760–1023 抽屉 | ±1 | `--rail-strip` | 按钮 32×32、间距 4、顶部内边距 8、图标 18×18 | `nav.insp-rail[aria-label="右栏导航"]` |
-| CT-CONV-302 | 右栏面板头 |  | 高度 | 44 | px | 展开态 | ±1 | 无 | 左侧标题 12.5/650、计数 10.5、收起按钮 26×26 | `div.insp-head` |
-| CT-CONV-303 | 右栏内容滚动区 |  | 宽度 | 280 | px | 展开态 | ±1 | `--rail-task-panel` | 独立滚动、内边距 12/14 | `div.insp-body#insp-panel[role="region"]` |
-| CT-CONV-304 | 右栏面板脚 |  | 高度 | 28 | px | 展开态 | ±1 | 无 | 左说明、右更新时间 HH:MM、文案随标签变化 | `div.insp-foot` |
-| CT-CONV-305 | 右栏外壳 |  | 宽度 | 320 | px | 1600、1280、1180、1024–1180 | ±1 | `--rail` | 收起 40、宽度过渡 160ms；1024 以下改用 `--rail-strip` | `aside.inspector` |
+| 编号 | 元素 | 选择器或aria | 属性 | 数值 | 单位 | 断点 | 容差 | token | 备注（不上机比对） |
+|---|---|---|---|---|---|---|---|---|---|
+| CT-CONV-301 | 右栏导航竖条 | `nav.insp-rail[aria-label="右栏导航"]` | 宽度 | 40 | px | 全宽档与 760–1023 抽屉 | ±1 | `--rail-strip` | 按钮 32×32、间距 4、顶部内边距 8、图标 18×18 |
+| CT-CONV-302 | 右栏面板头 | `div.insp-head` | 高度 | 44 | px | 展开态 | ±1 | 无 | 左侧标题 12.5/650、计数 10.5、收起按钮 26×26 |
+| CT-CONV-303 | 右栏内容滚动区 | `div.insp-body#insp-panel[role="region"]` | 宽度 | 280 | px | 展开态 | ±1 | `--rail-task-panel` | 独立滚动、内边距 12/14 |
+| CT-CONV-304 | 右栏面板脚 | `div.insp-foot` | 高度 | 28 | px | 展开态 | ±1 | 无 | 左说明、右更新时间 HH:MM、文案随标签变化 |
+| CT-CONV-305 | 右栏外壳 | `aside.inspector` | 宽度 | 320 | px | 1600、1280、1180、1024–1180 | ±1 | `--rail` | 收起 40、宽度过渡 160ms；1024 以下改用 `--rail-strip` |
 
 右栏根节点另带 `data-session`（仅当前会话存在时）、`data-tab`（overview、tasks、deliverables）与 `data-collapsed`；760–1023 时点击标签打开抽屉，不改变宽档收起记忆。角标为 `span.insp-badge[aria-hidden="true"]`，0 不渲染、1–9 显示数字、10 及以上显示 9+。
 
@@ -216,3 +258,15 @@ CHG-CONV-006 的 33 条与 CHG-CONV-007 的 18 条 AC 逐条一行。前 33 条�
 | CT-CONV-451 | `AC-CONV-009-18` | 无时限任务运行 30 分钟不取消，有时限任务到点取消 0 个且提醒 1 条 | scripts/ac/AC-CONV-009-18.mjs（待建） | 待建（任务夹具） | missing | 待验收 |
 
 类 6 的 18 条 009 AC 只登记验收入口，不把未建脚本写成通过；证据补齐后按判据逐条更新脚本路径与证据路径，再改表首状态。
+
+## 门禁口径差异记录
+
+v0.2 复跑后曾有 3 条 `scripts/check-contract.mjs` 告警：抽取口径与本表结构不匹配，契约行并未缺失，故不补行、不硬凑。这三条现已在被检查文件中按 `N/A：<类别>：<理由>` 声明，脚本侧接线后按声明放行，处置为**已按 N/A 声明消解**；复跑结果为 7 项检查全过、0 条告警。
+
+- `MX-G-27` 报「契约表无前端 spec字段行」：前端 spec 按 PRD 组织，只有接口调用表与组件索引，没有 props 或字段表；抽取器把接口调用表的首列当字段名，得到 23 个接口操作名，调用侧函数名不是字段。登记这些操作名不产生任何线上字段契约，故类 1 不设前端来源行。声明位置 `specs/frontend/P1-CONV/spec.md:36-38`，类别为 `前端字段`。
+- `MX-G-28` 报设计 spec 多出 18 个状态：设计侧这些表登记的是组件渲染态与交互态，类 2 是任务状态机，两者维度不同；把渲染态并入类 2 会与类 2 的中文展示态口径冲突，故不并入。声明位置 `specs/design/P1-CONV/spec.md:18-20`，类别为 `设计状态`。
+- `MX-G-28` 报前端 spec 多出 23 个状态：2 个来自索引表的状态列（实现度），21 个由抽取器整篇扫描箭头写法从散文与代码片段中切出，含 `rror`、`ode`、`vent` 等碎片（抽取见 `scripts/check-contract.mjs:526-573`，箭头正则在 `:566`），散文碎片不是状态。清这条要改散文措辞，属为过正则改技术描述，不改。声明位置 `specs/frontend/P1-CONV/spec.md:90-92`，类别为 `前端状态`。
+
+脚本侧由 `naDeclaration`（`scripts/check-contract.mjs:312`）读取文件里的 `N/A：<类别>：<理由>`，`naSuppression`（`:335-340`）在 `:337` 调用它、在 `:339` 返回判定结果，两个调用点分别在 `:1096`（类 1 字段）与 `:1258`（类 2 多余状态）。自检断言由 14 条增至 18 条，覆盖声明放行、空理由报错与未声明照旧告警三种情形。
+
+风险在于声明是文件级：一条 `N/A` 会放行该文件整个类别的比对，且只压这三条比对产生的 warning，缺状态、缺迁移等 error 不受影响；类别名拼错时不匹配 `NA_LABELS` 的任何键，告警照旧出现。后续给这几份 spec 补字段表、状态表或改动相关散文时，要同步复查声明是否仍成立。

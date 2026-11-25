@@ -32,6 +32,11 @@
  * 缺契约表时输出一条 MX-G-26 提示并退出 1，不抛异常；某一列 spec 文件缺失时
  * 该列比对记 warn 并跳过，其余列照常执行。
  *
+ * 不适用声明：被检查的 spec 可在正文写一行 `N/A：<类别>：<理由>`，声明某一类比对
+ * 不适用于该文件；类别取 前端字段、设计状态、前端状态 三者之一，类别须精确匹配，
+ * 理由不少于 8 字。命中时 MX-G-27 的「契约表无前端字段行」与 MX-G-28 的「多出状态」
+ * 不再记 warn；声明了但理由不足则记 error。未声明时行为与旧版一致。
+ *
  * 输出：
  *   每项一行 `[GATE-CONTRACT] <path>:<line> <规则> PASS|FAIL <检查项> 期望=<...> 实际=<...>`
  *   失败细节按 GATES.md：`[GATE-CONTRACT] <path>:<line> MX-G-NN <事实>；<统一为哪一侧的哪个值>`
@@ -69,7 +74,13 @@ const AC_RE = /AC-(?:[A-Z0-9]+-){2,}\d+/g
 const AC_ONE_RE = /AC-(?:[A-Z0-9]+-){2,}\d+/
 const CT_ID_RE = /^CT-(?:[A-Z0-9]+-)+\d+$/
 const CODE_RE = /^[a-z][a-z0-9_]*$/
-const NA_RE = /N\/A\s*[:：]\s*(?:([^：:，,。；;\s]+)\s*[:：]\s*)?(.{8,})/
+const NA_RE = /N\/A\s*[:：]\s*(?:([^：:，,。；;\s]+)\s*[:：]\s*)?(.*)$/
+const NA_MIN_REASON = 8
+const NA_LABELS = {
+  'fields:frontend': '前端字段',
+  'states:design': '设计状态',
+  'states:frontend': '前端状态',
+}
 const UI_STATES = ['default', 'hover', 'focus', 'active', 'disabled', 'loading', 'empty', 'error']
 const CONTRACT_STATUS = ['草稿', '冻结', '已变更']
 
@@ -293,14 +304,53 @@ function cell(rowObjectValue, ...names) {
   return ''
 }
 
-function naReason(text, label) {
-  for (const line of splitLines(text)) {
-    const match = line.match(NA_RE)
+/**
+ * 读取被检查文件里的不适用声明，语法 `N/A：<类别>：<理由>`（类别可省）。
+ * 类别精确匹配，避免散文里任意 N/A 行把别的检查一并放过。
+ * 声明了但理由不足 NA_MIN_REASON 字时 valid 为 false，由调用方记 error。
+ */
+function naDeclaration(text, label) {
+  const lines = splitLines(text)
+  for (let index = 0; index < lines.length; index += 1) {
+    const match = lines[index].match(NA_RE)
     if (!match) continue
-    if (label && match[1] && !match[1].includes(label)) continue
-    if (cleanInline(match[2]).length >= 8) return cleanInline(match[2])
+    const declaredLabel = cleanInline(match[1] ?? '')
+    if (label && declaredLabel !== label) continue
+    const reason = cleanInline(match[2] ?? '')
+    return { declared: true, label: declaredLabel, reason, line: index + 1, valid: reason.length >= NA_MIN_REASON }
   }
   return null
+}
+
+function naReason(text, label) {
+  const declaration = naDeclaration(text, label)
+  return declaration && declaration.valid ? declaration.reason : null
+}
+
+/**
+ * 判定某类比对是否被有效声明为不适用：null 表示未声明；
+ * suppressed 为 true 表示声明且理由足够，false 表示声明了但理由不足。
+ * 有效性统一由 naReason 判定，调用方只按结果决定放过还是记 error。
+ */
+function naSuppression(text, label) {
+  if (!label) return null
+  const declaration = naDeclaration(text, label)
+  if (!declaration) return null
+  return { suppressed: Boolean(naReason(text, label)), declaration }
+}
+
+function recordNaReasonError(check, run, rule, spec, label, declaration) {
+  record(check, run, {
+    rule,
+    severity: 'error',
+    path: spec.rel,
+    line: declaration.line,
+    item: 'N/A 理由',
+    expected: `N/A：${label}：<理由>，且理由不少于 ${NA_MIN_REASON} 字`,
+    actual: declaration.reason ? `理由过短：${declaration.reason}` : '理由为空',
+    hint: '补一句能核对口径的理由，或删掉这条 N/A 声明让门禁照常报',
+    message: `${label} 的 N/A 声明缺少理由`,
+  })
 }
 
 /* ----------------------------- 结果收集 ----------------------------- */
@@ -1040,7 +1090,14 @@ function runMxG27(run, contract) {
   const labels = { backend: '后端 spec', frontend: '前端 spec' }
   for (const target of ['backend', 'frontend']) {
     const contractFields = byTarget[target]
+    const spec = specs[target]
     if (contractFields.size === 0) {
+      const label = NA_LABELS[`fields:${target}`] ?? ''
+      const suppression = label && spec ? naSuppression(spec.text, label) : null
+      if (suppression) {
+        if (!suppression.suppressed) recordNaReasonError(check, run, 'MX-G-27', spec, label, suppression.declaration)
+        continue
+      }
       record(check, run, {
         rule: 'MX-G-27',
         severity: 'warning',
@@ -1054,7 +1111,6 @@ function runMxG27(run, contract) {
       })
       continue
     }
-    const spec = specs[target]
     if (!spec) {
       record(check, run, {
         rule: 'MX-G-27',
@@ -1198,17 +1254,23 @@ function runMxG28(run, contract) {
       })
     }
     if (extra.length > 0) {
-      record(check, run, {
-        rule: 'MX-G-28',
-        severity: 'warning',
-        path: spec.rel,
-        line: 1,
-        item: '状态值一致',
-        expected: 'spec 状态都能回指契约表',
-        actual: `多出状态 ${extra.join('、')}`,
-        hint: '把状态补进契约表，或从 spec 删除',
-        message: `${labels[target]}多出状态 ${extra.join('、')}`,
-      })
+      const label = NA_LABELS[`states:${target}`] ?? ''
+      const suppression = naSuppression(spec.text, label)
+      if (suppression) {
+        if (!suppression.suppressed) recordNaReasonError(check, run, 'MX-G-28', spec, label, suppression.declaration)
+      } else {
+        record(check, run, {
+          rule: 'MX-G-28',
+          severity: 'warning',
+          path: spec.rel,
+          line: 1,
+          item: '状态值一致',
+          expected: 'spec 状态都能回指契约表',
+          actual: `多出状态 ${extra.join('、')}`,
+          hint: '把状态补进契约表，或从 spec 删除',
+          message: `${labels[target]}多出状态 ${extra.join('、')}`,
+        })
+      }
     }
     const missingTransitions = [...contractTransitions].filter((pair) => !parsed.transitions.has(pair))
     if (parsed.transitions.size > 0 && missingTransitions.length > 0) {
@@ -1741,6 +1803,12 @@ function contractFixture(options = {}) {
   const errorCode = options.errorCode ?? 'conflict'
   const selector = options.selector ?? '[data-task-id]'
   const width = options.width ?? 320
+  const frontendRows =
+    options.frontendFields === false
+      ? ''
+      : `| CT-CONV-003 | 任务卡 props | 前端 TaskCard 的 props | \`taskId\` | string | 否 | 无 | 1–64 字 | 前端 spec props |
+| CT-CONV-004 | 任务卡 props | 前端 TaskCard 的 props | \`statusText\` | string | 否 | 无 | 非空 | 前端 spec props |
+`
   return `# 契约表 · CONV
 
 状态：冻结
@@ -1755,8 +1823,7 @@ owner：设计
 |---|---|---|---|---|---|---|---|---|
 | CT-CONV-001 | 任务投影 | GET /api/tasks 的 task | \`taskId\` | string | 否 | 无 | 1–64 字 | 后端 spec §2 |
 | CT-CONV-002 | 任务投影 | GET /api/tasks 的 task | \`displayStatus\` | string | 否 | 无 | pending、running | 后端 spec §2 |
-| CT-CONV-003 | 任务卡 props | 前端 TaskCard 的 props | \`taskId\` | string | 否 | 无 | 1–64 字 | 前端 spec props |
-| CT-CONV-004 | 任务卡 props | 前端 TaskCard 的 props | \`statusText\` | string | 否 | 无 | 非空 | 前端 spec props |
+${frontendRows}
 
 ## 类 2 状态机
 
@@ -1795,6 +1862,23 @@ function writeContractFixtureSpecs(root, options = {}) {
   const errorCode = options.errorCode ?? 'conflict'
   const width = options.width ?? 320
   const boundaryMax = options.boundaryMax ?? 64
+  const designNa =
+    options.naReasons === 'full'
+      ? 'N/A：设计状态：设计 spec 的状态矩阵登记组件渲染态与交互态，不属于类 2 任务状态机。\n'
+      : ''
+  const frontendFieldNa =
+    options.naReasons === 'full'
+      ? 'N/A：前端字段：前端 spec 的接口调用表首列是接口操作名，不是 props 字段，不参与字段比对。\n'
+      : options.naReasons === 'empty'
+        ? 'N/A：前端字段：\n'
+        : ''
+  const frontendStateNa =
+    options.naReasons === 'full'
+      ? 'N/A：前端状态：索引表实现度列与散文箭头写法不参与状态扫描。\n'
+      : ''
+  const extraStateHeader = `| 元素 | default | hover | focus | active | disabled | loading | empty | error${options.extraNaStates ? ' | archived | renaming' : ''} |`
+  const extraStateRule = `|---|---|---|---|---|---|---|---|---${options.extraNaStates ? '|---|---' : ''}|`
+  const extraStateRow = `| 任务卡 | 白 | 浅灰 | 蓝 | 深蓝 | 灰 | 转圈 | 空 | 红${options.extraNaStates ? ' | 档 | 名' : ''} |`
   writeFixture(root, 'specs/product/P1-CONV/spec.md', `# 产品 spec · P1-CONV
 
 ## 1 目标
@@ -1811,11 +1895,11 @@ function writeContractFixtureSpecs(root, options = {}) {
 
 ## 1 状态矩阵
 
-| 元素 | default | hover | focus | active | disabled | loading | empty | error |
-|---|---|---|---|---|---|---|---|---|
-| 任务卡 | 白 | 浅灰 | 蓝 | 深蓝 | 灰 | 转圈 | 空 | 红 |
+${extraStateHeader}
+${extraStateRule}
+${extraStateRow}
 
-## 2 选择器
+${designNa}## 2 选择器
 
 | 元素 | 选择器 |
 |---|---|
@@ -1838,13 +1922,13 @@ function writeContractFixtureSpecs(root, options = {}) {
 | \`taskId\` | string | 无 | 是 |
 | \`statusText\` | string | 无 | 是 |
 
-## 2 状态矩阵
+${frontendFieldNa}## 2 状态矩阵
 
-| 元素 | default | hover | focus | active | disabled | loading | empty | error |
-|---|---|---|---|---|---|---|---|---|
-| 任务卡 | 白 | 浅灰 | 蓝 | 深蓝 | 灰 | 转圈 | 空 | 红 |
+${extraStateHeader}
+${extraStateRule}
+${extraStateRow}
 
-## 3 状态转移
+${frontendStateNa}## 3 状态转移
 
 | 从状态 | 到状态 | 事件 |
 |---|---|---|
@@ -1918,6 +2002,15 @@ function buildContractFixtures(base) {
   writeContractFixtureSpecs(fail, { errorCode: 'task_locked', width: 360, boundaryMax: 72 })
   const empty = join(base, 'empty')
   writeFixture(empty, 'specs/README.md', '# 空夹具\n')
+  const na = join(base, 'na')
+  writeFixture(na, 'specs/contract/CONV/contract.md', contractFixture({ frontendFields: false }))
+  writeContractFixtureSpecs(na, { naReasons: 'full', extraNaStates: true })
+  const naMissing = join(base, 'na-missing')
+  writeFixture(naMissing, 'specs/contract/CONV/contract.md', contractFixture({ frontendFields: false }))
+  writeContractFixtureSpecs(naMissing, { extraNaStates: true })
+  const naEmpty = join(base, 'na-empty')
+  writeFixture(naEmpty, 'specs/contract/CONV/contract.md', contractFixture({ frontendFields: false }))
+  writeContractFixtureSpecs(naEmpty, { naReasons: 'empty', extraNaStates: true })
 }
 
 function signature(run) {
@@ -1951,6 +2044,39 @@ function runSelfTest(options = {}) {
     const underscoreRun = runContract(join(base, 'pass-underscore'), { domain: null })
     const underscoreErrors = underscoreRun.findings.filter((finding) => finding.severity === 'error').length
     line(underscoreErrors === 0, `下划线错误码样例 error 数 期望 0 实际 ${underscoreErrors}`)
+
+    const naRun = runContract(join(base, 'na'), { domain: null })
+    const naErrors = naRun.findings.filter((finding) => finding.severity === 'error').length
+    line(naErrors === 0, `声明 N/A 样例 error 数 期望 0 实际 ${naErrors}`)
+    const naWarnings = naRun.findings.filter(
+      (finding) => finding.severity === 'warning' && (finding.rule === 'MX-G-27' || finding.rule === 'MX-G-28'),
+    )
+    line(
+      naWarnings.length === 0,
+      `声明 N/A 样例 MX-G-27/28 warning 数 期望 0 实际 ${naWarnings.length}`,
+    )
+
+    const naMissingRun = runContract(join(base, 'na-missing'), { domain: null })
+    const naMissingWarnings = naMissingRun.findings.filter(
+      (finding) => finding.severity === 'warning' && (finding.rule === 'MX-G-27' || finding.rule === 'MX-G-28'),
+    )
+    const naMissingText = naMissingWarnings.map((finding) => finding.message).join('\n')
+    line(
+      naMissingWarnings.length === 3 &&
+        /无前端 spec字段行/.test(naMissingText) &&
+        /设计 spec多出状态/.test(naMissingText) &&
+        /前端 spec多出状态/.test(naMissingText),
+      `未声明 N/A 样例 warning 数 期望 3 实际 ${naMissingWarnings.length}`,
+    )
+
+    const naEmptyRun = runContract(join(base, 'na-empty'), { domain: null })
+    const naReasonErrors = naEmptyRun.findings.filter(
+      (finding) => finding.severity === 'error' && /缺少理由/.test(finding.message),
+    )
+    line(
+      naReasonErrors.length === 1,
+      `空理由 N/A 样例 error 数 期望 1 实际 ${naReasonErrors.length}`,
+    )
 
     const failRun = runContract(failRoot, { domain: null })
     const failedRules = [...new Set(failRun.findings.filter((finding) => finding.severity === 'error').map((finding) => finding.rule))].sort()
@@ -2028,6 +2154,9 @@ function printHelp() {
   契约表路径 specs/contract/<域>/contract.md，域与 specs 下 P1-CONV 这类目录
   按后缀匹配。字段、状态、错误码、选择器从 Markdown 表格提取；某列文件缺失时
   该列记 warn 跳过。缺契约表时输出一条 MX-G-26 提示并退出 1，不抛异常。
+  不适用声明：spec 正文写一行 \`N/A：<类别>：<理由>\`（类别取 前端字段、设计状态、
+  前端状态，理由不少于 8 字）时，对应的 MX-G-27 前端字段告警或 MX-G-28 多出状态
+  告警不再输出；声明了但理由为空或过短记 error。
 
 输出：
   每项一行 PASS/FAIL 检查项 期望 实际；失败细节按 GATES.md 的

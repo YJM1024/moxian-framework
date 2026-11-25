@@ -10,11 +10,13 @@
  * 七条规则：
  *   R1 禁用词：定义行命中第 2.2 节词表任一，error。
  *   R2 数字无比较符：数字前后既无比较符也无单位，warning。
- *   R3 无脚本且未写人工：行内既无 scripts/ac/ 也无 人工: 或 N/A：，error。
+ *   R3 无脚本且未写人工：定义行（含续行）内既无 scripts/ac/ 也无 人工: 或
+ *      N/A：，error。
  *   R4 非法状态词：状态声明或判定词落在四值之外，error。
  *   R5 主语缺失：编号后的陈述以该、这个、上述、相关等指代词开头，warning。
  *   R6 超长：单行超过 240 字符，或定义跨超过 2 行，warning。
- *   R7 重复 AC ID：同一编号在本文或跨文件出现多次，error。
+ *   R7 重复 AC ID：同一编号在本文或跨文件出现多次，error；判据映射节内
+ *      不带判定/脚本声明的行，或形如 `- \`AC-…\` → 脚本` 的引用行，不算定义。
  *
  * 用法：
  *   node scripts/check-spec-language.mjs
@@ -26,7 +28,8 @@
  * --json 只输出 failures 与 warnings 两个数组，元素含 rule、severity、path、
  * line、hint。退出码 0 表示没有 error，1 表示有 error，2 表示参数或目录错误。
  * --self-test 在 .tmp/ac-tooling/fixtures/language 下生成固定样本，断言七条
- * 规则各命中一次、干净样本零命中，不读写真实仓库内容。
+ * 规则各命中一次、干净样本零命中、判据映射行不计入重复、带声明的真实重复
+ * 仍报 R7，共 10 条断言，不读写真实仓库内容。
  */
 
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
@@ -78,6 +81,12 @@ const STATUS_DECLARATION = /(?:状态|判定|结果|status)\s*[:：=]\s*`?([A-Za
 
 const VAGUE_SUBJECT = /^(?:该|这个|上述|相关|上面|此)/
 const SCRIPT_OR_MANUAL = /scripts\/ac\/[^\s`）)]*\.mjs|人工\s*[:：]|N\/A\s*[:：]/
+// 判据映射行只引用既有 AC，不是定义：映射节内或以「→ 脚本」开头的行，
+// 且不带「判定=」「脚本=」声明时不计入 R7；真定义都带声明，仍会被计数。
+const MAPPING_HEADING = /判据映射|AC\s*映射|映射/
+const MAPPING_ARROW_ROW = /^\s*-\s+`AC-[^`]+`\s*(?:→|->|=>)/
+const DECLARED_JUDGEMENT = /判定\s*[:：=]/
+const DECLARED_SCRIPT = /脚本\s*[:：=]/
 
 const COMPARATOR_BEFORE =
   /(?:>=|<=|>|<|=|≥|≤|±|不少于|不超过|大于|小于|等于|至少|至多|最多|最少|高于|低于|超过|不足|达到|约)\s*$/
@@ -211,10 +220,15 @@ function lintRoot(root) {
       continue
     }
     const lines = content.split(/\r?\n/)
+    let heading = ''
 
     for (let index = 0; index < lines.length; index += 1) {
       const line = lines[index]
+      const headingMatch = /^#{1,6}\s+(.*)$/.exec(line)
+      if (headingMatch) heading = headingMatch[1]
       if (!AC_DEFINITION.test(line)) continue
+      const declared = DECLARED_JUDGEMENT.test(line) || DECLARED_SCRIPT.test(line)
+      if (!declared && (MAPPING_HEADING.test(heading) || MAPPING_ARROW_ROW.test(line))) continue
       const ids = extractIds(line)
       const lineNo = index + 1
       const entry = collectEntryLines(lines, index)
@@ -222,7 +236,7 @@ function lintRoot(root) {
 
       if (BANNED_WORDS.some((word) => line.includes(word))) ruleHits.add('R1')
       if (numbersWithoutComparator(line).length > 0) ruleHits.add('R2')
-      if (!SCRIPT_OR_MANUAL.test(line)) ruleHits.add('R3')
+      if (!SCRIPT_OR_MANUAL.test(entry.join(' '))) ruleHits.add('R3')
 
       STATUS_DECLARATION.lastIndex = 0
       let declaration = STATUS_DECLARATION.exec(line)
@@ -307,9 +321,15 @@ function writeSelfTestFixtures() {
   const badSpec = join(FIXTURE_DIR, 'bad', 'specs', 'product', 'PX-TEST', 'spec.md')
   const dupSpec = join(FIXTURE_DIR, 'bad', 'specs', 'product', 'PX-DUP', 'spec.md')
   const cleanSpec = join(FIXTURE_DIR, 'clean', 'specs', 'product', 'PX-CLEAN', 'spec.md')
+  const mapProductSpec = join(FIXTURE_DIR, 'map', 'specs', 'product', 'PX-MAP', 'spec.md')
+  const mapChangeSpec = join(FIXTURE_DIR, 'map', 'specs', 'changes', 'PX-MAP', 'spec.md')
+  const dup2Spec = join(FIXTURE_DIR, 'dup', 'specs', 'product', 'PX-DUP2', 'spec.md')
   mkdirSync(dirname(badSpec), { recursive: true })
   mkdirSync(dirname(dupSpec), { recursive: true })
   mkdirSync(dirname(cleanSpec), { recursive: true })
+  mkdirSync(dirname(mapProductSpec), { recursive: true })
+  mkdirSync(dirname(mapChangeSpec), { recursive: true })
+  mkdirSync(dirname(dup2Spec), { recursive: true })
 
   const longText = '边界场景覆盖稳定选择器与固定取值。'.repeat(20)
   writeFileSync(
@@ -350,6 +370,39 @@ function writeSelfTestFixtures() {
     ].join('\n'),
     'utf8',
   )
+  writeFileSync(
+    mapProductSpec,
+    [
+      '# 自检样本：判据映射的定义',
+      '',
+      '- `AC-TST-002-01` 映射样本定义，判定=`自动`；脚本=scripts/ac/AC-TST-002-01.mjs。',
+      '',
+    ].join('\n'),
+    'utf8',
+  )
+  writeFileSync(
+    mapChangeSpec,
+    [
+      '# 自检样本：判据映射表',
+      '',
+      '### 4.1 判据映射',
+      '',
+      '- `AC-TST-002-01` → `scripts/ac/AC-TST-002-01.mjs`，脚本存在，本轮未运行，结果记 `evidence.md`。',
+      '',
+    ].join('\n'),
+    'utf8',
+  )
+  writeFileSync(
+    dup2Spec,
+    [
+      '# 自检样本：真实重复定义',
+      '',
+      '- `AC-TST-002-02` 重复一定义，判定=`自动`；脚本=scripts/ac/AC-TST-002-02.mjs。',
+      '- `AC-TST-002-02` 重复二定义，判定=`自动`；脚本=scripts/ac/AC-TST-002-02.mjs。',
+      '',
+    ].join('\n'),
+    'utf8',
+  )
 }
 
 function runSelfTest() {
@@ -368,6 +421,13 @@ function runSelfTest() {
   }
   const cleanCount = clean.failures.length + clean.warnings.length
   assert('干净样本命中次数', cleanCount === 0, `期望 0 实际 ${cleanCount}`)
+
+  const map = lintRoot(join(FIXTURE_DIR, 'map'))
+  const mapR7 = [...map.failures, ...map.warnings].filter((item) => item.rule === 'R7').length
+  assert('映射行不计入重复编号', mapR7 === 0, `期望 0 实际 ${mapR7}`)
+  const dup2 = lintRoot(join(FIXTURE_DIR, 'dup'))
+  const dup2R7 = [...dup2.failures, ...dup2.warnings].filter((item) => item.rule === 'R7').length
+  assert('真实重复定义仍报 R7', dup2R7 === 1, `期望 1 实际 ${dup2R7}`)
 
   // 未归类命中是覆盖性守卫，不计入断言数；命中时直接判失败并在末行注明。
   const extra = badAll.length - Object.keys(RULES).length

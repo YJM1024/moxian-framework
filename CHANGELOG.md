@@ -1,6 +1,14 @@
 # 变更记录
 
-本文件汇总墨线框架从 v1.0 到 v1.7 的版本演进。条目取自源仓 `docs/framework/README.md` 的版本说明与 `docs/framework/MOXIAN.md` 附录 D 表 D-2，日期沿用原记录，均为 2026 年。
+本文件汇总墨线框架从 v1.0 到 v1.7.1 的版本演进。条目取自源仓 `docs/framework/README.md` 的版本说明与 `docs/framework/MOXIAN.md` 附录 D 表 D-2，日期沿用原记录，均为 2026 年。
+
+## v1.7.1（2026-11-25）
+
+v1.7 维护版。`GATES.md` 第 3.4.1 节新增 `N/A：<类别>：<理由>` 声明规则，适用于前端字段、设计状态与前端状态三类缺失声明，只影响 MX-G-27 与 MX-G-28 的提示级判定，error 级判定不受影响；章级规则 284 条、角色规则 42 条、门禁规则 68 条与编号均未变。四个门禁脚本同步修订：`check-gates.mjs` 接受历史包两段式 Covers 编号，`check-contract.mjs` 实现 N/A 声明，`check-matrix-coverage.mjs` 补 ADR 与复现记录模板名册，`check-spec-language.mjs` 修正 R3 与 R7 判定；四脚本自检分别为 15、18、22 与 10 条，合计 65 条，全部退出码 0。P2 与 P4 的产品 spec 已按 `f478185` 恢复，41 处状态码改写与 40 条 AC 断言位序变化不再存在。源仓实跑结果为 `check-trace.mjs` 684 项、矩阵覆盖率 66/66（2 条提示）、契约门禁 7/7（0 条提示）、`check-gates.mjs` 120 项（0 条提示）、spec 语言 0 error 与 59 warning，退出码均为 0。
+
+独立仓同步把 `docs/framework/` 的 70 个文件全量覆盖到 `docs/`，新增 v1.7.1 验收报告、`docs/process/RUNBOOK.md` 与源仓 `docs/plan/DECISIONS.md`；四个门禁脚本按独立仓布局改写后更新，参考输入同步契约表与 P1-CONV 四列 spec。实跑结果为矩阵覆盖率 66/66（2 条提示）、契约门禁带 `--root examples/reference-conv` 7/7（0 条提示）、`check-gates.mjs` 自检 15 条、`check-spec-language.mjs` 自检 10 条、`check-trace.mjs` 自检 11 条，退出码均为 0；框架仓没有产品输入，追溯、结构与语言三道门禁的裸跑按 README 已知遗留记录。
+
+v1.7.1 于 2026-11-25 通过独立验收，验收人 `mx-accept-v171`，结论 pass，原因码不适用（MX-3-13），前轮 R-MANUAL、R-SPEC、R-SCRIPT 三条已消解，报告见 `accept/ACCEPT-MOXIAN-V171-20261125.md`。
 
 ## v1.7（2026-11-25）
 

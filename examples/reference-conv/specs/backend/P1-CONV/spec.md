@@ -106,7 +106,7 @@ N/A：会话树、草稿、置顶均为 HTTP 拉取式；WS 不投递 session �
 
 ### 1.7 未实现/出口预期
 
-- `AC-001-04` “归档不可置顶”：现状 `SetPinned` 无 archived 守卫，`POST /api/sessions/{archived}/pin` 会 200 并置顶；产品要求拒绝（具体码未定，见 §13 C-02）。出口：在 `SetPinned` 内 `Get` 后判 `Archived!=0` 返回 `ErrArchived`（409），并补测试。
+- `AC-001-04` “归档不可置顶”：现状 `SetPinned` 无 archived 守卫，`POST /api/sessions/{archived}/pin` 会 200 并置顶；产品要求拒绝（具体码未定，见 §13 C-02）。出口：在 `SetPinned` 内 `Get` 后判 `Archived!=0` 返回 `ErrArchived`（409），并补测试。判定=人工；脚本=N/A：守卫未实现，见 §13 C-02。
 - 主会话不可归档已实现，见 §2.1/§2.4；错误码为 `main_session_protected`，与产品写的 `main_session_immutable` 不一致（§13 C-01）。
 
 ---
@@ -219,7 +219,7 @@ N/A：搜索为一次性 HTTP 查询，不产生 WS 帧，也不写入事件日�
 ### 3.7 未实现/出口预期
 
 - 消息正文搜索降 P2：接口保留但前端不再作为标题搜索入口；无未读字段（§12）。
-- `AC-003-02` “搜索失败回退空结果 + 提示”是前端行为；后端失败为 500 `internal`，前端需 try/catch 后展示提示并把列表置空（不伪造 0 结果）。
+- `AC-003-02` “搜索失败回退空结果 + 提示”是前端行为；后端失败为 500 `internal`，前端需 try/catch 后展示提示并把列表置空（不伪造 0 结果）。判定=人工；脚本=N/A：该 AC 是前端行为，前端验收见 test-plan。
 
 ---
 

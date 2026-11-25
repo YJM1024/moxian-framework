@@ -11,8 +11,9 @@
  *           MX-BE、MX-PD、MX-QA、MX-R、MX-G 等前缀，只查 MOXIAN.md
  *           会把有效引用误判为缺失，因此按主册加伴随册解析并分别计数；
  *   模板名：解析到 docs/templates/
- *           下的真实文件；组件 spec、ADR、复现记录三类产物在框架内没有
- *           独立模板文件，按各条定义核对并记 warning，不阻断；
+ *           下的真实文件；ADR 与复现记录已有独立模板 adr.md 与 repro.md，
+ *           组件 spec 仍无独立模板文件，按 MX-6-03 的定义核对并记
+ *           warning，不阻断；
  *   门禁名：在 docs/GATES.md 的节标题或矩阵第 2 节门禁名册中
  *           存在；人工（<条件>）只在不适用阶段按人工判据计，记 warning。
  *
@@ -32,8 +33,9 @@
  * references、missing、warnings、structure、errors、exitCode。
  * 退出码：0 表示 66 格全覆盖；1 表示存在缺失格；2 表示参数错误或
  * 运行前置缺失（矩阵、总册、GATES 或模板目录不可读）。
- * --self-test 在 .tmp/matrix-coverage-self-test/ 下生成通过样例与失败样例，
- * 不读真实仓库内容，不清空目录，重复运行只覆盖已知文件。
+ * --self-test 在 .tmp/matrix-coverage-self-test/ 下生成通过样例、失败样例与
+ * 模板缺失样例，不读真实仓库内容，不清空目录，重复运行只覆盖已知文件；
+ * 另用剔除 ADR 与 repro 的名册跑一次通过样例，确认旧名册报未知模板。
  */
 
 import {
@@ -55,7 +57,7 @@ const MOXIAN_REL = 'docs/MOXIAN.md'
 const GATES_REL = 'docs/GATES.md'
 const ROLES_REL = 'docs/ROLES.md'
 const DOMAINS_REL = 'docs/domains'
-const TEMPLATE_DIRS = ['docs/templates']
+const TEMPLATE_DIRS = ['docs/templates', 'docs/process/templates']
 
 const MAIN_TYPES = [
   '新功能',
@@ -87,12 +89,15 @@ const TEMPLATE_FILES = new Map([
   ['token-change', 'docs/templates/token-change.md'],
   ['cli-contract', 'docs/templates/cli-contract.md'],
   ['change.md', 'docs/templates/change.md'],
+  ['ADR', 'docs/templates/adr.md'],
+  ['repro', 'docs/templates/repro.md'],
 ])
 
 /**
  * 产物类型没有独立模板文件，按定义条款与落点核对。
  * rule 必须在规则名册中存在，definitionPath 必须存在，canonicalFile 写了的
  * 必须存在；canonicalPath 只用于提示，不要求当前仓库已有实例。
+ * ADR 与复现记录已登记独立模板文件，走 TEMPLATE_FILES，不在此表。
  */
 const ARTIFACT_TEMPLATES = new Map([
   [
@@ -101,24 +106,6 @@ const ARTIFACT_TEMPLATES = new Map([
       rule: 'MX-6-03',
       definitionPath: MOXIAN_REL,
       canonicalPath: 'specs/COMP-<name>/spec.md',
-      canonicalFile: null,
-    },
-  ],
-  [
-    'ADR',
-    {
-      rule: 'MX-PD-62',
-      definitionPath: 'docs/domains/product-design.md',
-      canonicalPath: 'docs/plan/DECISIONS.md',
-      canonicalFile: 'docs/plan/DECISIONS.md',
-    },
-  ],
-  [
-    'repro 记录',
-    {
-      rule: 'MX-5-21',
-      definitionPath: MOXIAN_REL,
-      canonicalPath: '.tmp/intake/<CHG-ID>/repro.md',
       canonicalFile: null,
     },
   ],
@@ -177,7 +164,7 @@ function usage() {
      共 18 格。
   2. 每格检查动作、模板、门禁三个字段非空。
   3. 格内规则号在 MOXIAN.md 或伴随规则册中存在；模板名解析到模板文件，
-     组件 spec、ADR 与复现记录按框架内产物定义核对；门禁名在 GATES.md
+     组件 spec 按框架内产物定义核对；门禁名在 GATES.md
      或矩阵第 2 节门禁名册中存在。
   4. 输出主矩阵、附加类型与合计三组覆盖率，字段齐全数与缺失清单。
 
@@ -193,9 +180,10 @@ function usage() {
 
 --json 输出单个对象，字段为 gate、rule、status、coverage、fields、
 references、missing、warnings、structure、errors、checks、exitCode。
---self-test 在 .tmp/matrix-coverage-self-test/ 下生成通过样例与失败样例，
-通过样例断言 48/48、18/18、66/66 与退出码 0，失败样例断言按字段和引用
-分类命中并退出码 1。`
+--self-test 在 .tmp/matrix-coverage-self-test/ 下生成通过样例、失败样例与
+模板缺失样例，通过样例断言 48/48、18/18、66/66 与退出码 0，失败样例断言
+按字段和引用分类命中并退出码 1，模板缺失样例断言 ADR 模板文件缺失、旧名册
+样例断言 ADR 与 repro 报未知模板，两者退出码均为 1。`
 }
 
 function parseArgs(argv) {
@@ -681,10 +669,10 @@ function normalizeTemplateToken(token) {
     .replace(/。$/, '')
 }
 
-function resolveTemplateFile(name) {
-  const aliases = [...TEMPLATE_FILES.keys()].sort((left, right) => right.length - left.length)
+function resolveTemplateFile(name, roster = TEMPLATE_FILES) {
+  const aliases = [...roster.keys()].sort((left, right) => right.length - left.length)
   for (const alias of aliases) {
-    if (name === alias || name.startsWith(`${alias} `)) return TEMPLATE_FILES.get(alias)
+    if (name === alias || name.startsWith(`${alias} `)) return roster.get(alias)
   }
   return null
 }
@@ -742,7 +730,7 @@ function validateTemplates(cell, context, stats) {
       continue
     }
 
-    const file = resolveTemplateFile(name)
+    const file = resolveTemplateFile(name, context.templates)
     if (file) {
       stats.templates.total += 1
       if (!existsSync(join(context.root, file))) {
@@ -987,7 +975,7 @@ function buildResult(cells, structureIssues, stats) {
   }
 }
 
-function run(root) {
+function run(root, overrides = null) {
   const matrixText = readRequired(root, MATRIX_REL)
   const moxianText = readRequired(root, MOXIAN_REL)
   const gatesText = readRequired(root, GATES_REL)
@@ -1049,7 +1037,12 @@ function run(root) {
     for (const name of FALLBACK_GATES) gates.add(name)
   }
 
-  const context = { root, rules, gates }
+  const context = {
+    root,
+    rules,
+    gates,
+    templates: overrides?.templates ?? TEMPLATE_FILES,
+  }
   const stats = validateCells(cells, context)
   return buildResult(cells, structureIssues, stats)
 }
@@ -1244,7 +1237,7 @@ function fixtureMatrix(fail) {
   return lines.join('\n')
 }
 
-function buildFixture(root, variant) {
+function buildFixture(root, variant, skipTemplates = []) {
   const fail = variant === 'fail'
   writeFixtureFile(
     root,
@@ -1328,7 +1321,9 @@ function buildFixture(root, variant) {
     ].join('\n'),
   )
   writeFixtureFile(root, 'docs/plan/DECISIONS.md', '# 决策记录\n')
-  for (const relativePath of TEMPLATE_FILES.values()) {
+  const skipped = new Set(skipTemplates)
+  for (const [alias, relativePath] of TEMPLATE_FILES) {
+    if (skipped.has(alias)) continue
     writeFixtureFile(root, relativePath, `# 测试模板 ${relativePath}\n`)
   }
   writeFixtureFile(root, MATRIX_REL, fixtureMatrix(fail))
@@ -1352,6 +1347,14 @@ function selfTest() {
     const fail1 = run(failRoot)
     const fail2 = run(failRoot)
 
+    const missingRoot = join(root, 'missing-file')
+    buildFixture(missingRoot, 'pass', ['ADR'])
+    const missingRun = run(missingRoot)
+    const legacyRoster = new Map(
+      [...TEMPLATE_FILES].filter(([alias]) => alias !== 'ADR' && alias !== 'repro'),
+    )
+    const legacyRun = run(passRoot, { templates: legacyRoster })
+
     check(
       pass1.coverage.main.covered === 48 && pass1.coverage.main.total === 48,
       `通过样例主矩阵 48/48，实际 ${pass1.coverage.main.covered}/${pass1.coverage.main.total}`,
@@ -1366,8 +1369,16 @@ function selfTest() {
     )
     check(pass1.errors === 0 && pass1.exitCode === 0, `通过样例 error 0、退出码 0，实际 ${pass1.errors}/${pass1.exitCode}`)
     check(
-      pass1.warnings.length === 4,
-      `通过样例外产物与人工门禁 warning 4，实际 ${pass1.warnings.length}`,
+      pass1.warnings.length === 2,
+      `通过样例外产物与人工门禁 warning 2，实际 ${pass1.warnings.length}`,
+    )
+    check(
+      TEMPLATE_FILES.get('ADR') === 'docs/templates/adr.md',
+      `模板名册 ADR 指向 docs/templates/adr.md，实际 ${TEMPLATE_FILES.get('ADR') ?? '缺失'}`,
+    )
+    check(
+      TEMPLATE_FILES.get('repro') === 'docs/templates/repro.md',
+      `模板名册 repro 指向 docs/templates/repro.md，实际 ${TEMPLATE_FILES.get('repro') ?? '缺失'}`,
     )
 
     check(
@@ -1398,6 +1409,22 @@ function selfTest() {
     ]) {
       check(kinds.has(kind), `失败样例命中 ${kind}`)
     }
+
+    const missingKinds = new Set(
+      missingRun.missing.flatMap((item) => item.reasons.map((reason) => reason.kind)),
+    )
+    check(
+      missingKinds.has('template-file-missing') && missingRun.exitCode === 1,
+      `模板文件缺失样例命中 template-file-missing、退出码 1，实际 ${[...missingKinds].join('、') || '无'}、${missingRun.exitCode}`,
+    )
+
+    const legacyKinds = new Set(
+      legacyRun.missing.flatMap((item) => item.reasons.map((reason) => reason.kind)),
+    )
+    check(
+      legacyKinds.has('template-unknown') && legacyRun.errors === 2 && legacyRun.exitCode === 1,
+      `旧名册样例命中 template-unknown 2 格、退出码 1，实际 ${legacyRun.errors}、${legacyRun.exitCode}`,
+    )
 
     const stable = (left, right) =>
       JSON.stringify(left.coverage) === JSON.stringify(right.coverage) &&
