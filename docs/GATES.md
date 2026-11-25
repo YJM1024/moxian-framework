@@ -405,6 +405,25 @@ FAILED: 4 error(s), 0 warning(s)
 | `scripts/check-matrix-coverage.mjs` | 新建 | 矩阵覆盖率门禁 | 读取 `TASK-MATRIX.md` 第 3 节主矩阵与第 8 节附加类型表，按 `MX-G-59` 核对 66 格的动作、模板、门禁三字段与规则、模板、门禁三类引用，输出主矩阵、附加类型与合计三组覆盖率；`--self-test` 生成通过样例与失败样例，`--json` 输出覆盖率与缺失清单 |
 
 表中标为人工判据的 24 条规则当前没有脚本执行，含 `MX-G-14` 至 `MX-G-19`、`MX-G-21` 至 `MX-G-25`、`MX-G-57`、`MX-G-58`、`MX-G-60` 至 `MX-G-63` 与 `MX-G-64` 至 `MX-G-70`，门禁记录须写清核对的规则、判据、结论、核对人与时间；人工核对通过按 `通过` 计，未核对或缺少记录按 `待补` 计。脚本补齐后删去人工判据标注，改为自动执行并同步第 6 节、附录 B 与 U-12。
+
+### 4.1 镜像仓的参考输入运行口径
+
+`moxian-framework` 是不带产品仓的框架抽取，门禁需要的 `specs/`、`docs/product/` 与按变更组织的输入由 `examples/reference-conv/` 提供。`--root <目录>` 已由 `check-gates.mjs`、`check-trace.mjs`、`check-contract.mjs` 与 `check-spec-language.mjs` 支持，路径相对当前工作目录解析，不传时按仓库根解析；结构、追溯与契约三道的产物路径都从 `--root` 派生，不读脚本所在目录。`check-matrix-coverage.mjs` 只读 `docs/TASK-MATRIX.md` 与规则、模板、门禁名册，不需要 `--root`。
+
+五道可执行门禁的镜像运行命令如下，均在仓库根目录执行：
+
+```powershell
+node scripts/check-gates.mjs --root examples/reference-conv
+node scripts/check-trace.mjs --root examples/reference-conv
+node scripts/check-contract.mjs --root examples/reference-conv
+node scripts/check-spec-language.mjs --root examples/reference-conv
+node scripts/check-matrix-coverage.mjs
+```
+
+五条命令的退出码都是 0，数字以 v1.7.1 抽取时的参考输入为准：结构门禁 42 项通过、0 项失败、57 条 warning；追溯门禁 188 项检查、失败 0、提示 0；契约门禁 7 项通过、0 条提示；语言门禁 0 error、16 warning；矩阵覆盖率 66/66（100%），2 条提示。warning 不改变通过结论，结构门禁的 57 条来自参考输入按源仓原样复制的在途变更包缺少十节模板的若干节，语言门禁的 16 条来自 R2 要求数字补比较符与单位。
+
+增量覆盖率与证据两道门禁不在这组命令内。增量覆盖率要求改动的文件清单，由 `--changed-files` 或 `--from-git` 提供，缺失时退出码 2 并记待补；证据完整性要求按变更组织的完整证据索引与夹具清单，参考输入按源仓原样复制在途证据，裸跑会因证据行缺解除条件等字段报 error，不能把这种输入当作通过样例。两道门禁在镜像仓内只用 `--self-test` 验证脚本本身，断言数分别是 14 与 14。
+
 ## 5 自证要求
 每个门禁必须带一个通过样例与一个失败样例，样例由脚本自检生成，失败样例的命中规则集合固定，才能证明门禁本身可判定。缺少样例的门禁按 `未验证` 处理，不能进入默认阻断名单。
 

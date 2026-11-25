@@ -27,31 +27,35 @@
 
 脚本只依赖 Node.js，本仓验证使用 v24.21.0，不需要安装依赖。
 
-矩阵覆盖率门禁直接读 `docs/`：
+`examples/reference-conv/` 是随仓提供的 P1-CONV 参考输入，含产品、设计、前端、后端四列 spec 与测试计划，`docs/product/TREE.md` 与 `TRACEABILITY.md`，`specs/test/e2e/README.md`，以及 CHG-CONV-001 至 CHG-CONV-007 七个变更包；每个包都有 proposal、spec、tasks、test-plan 与 evidence。前四道门禁跑在这份输入上，矩阵覆盖率门禁读本仓 `docs/`，五条命令都在仓库根目录执行：
 
 ```powershell
+node scripts/check-gates.mjs --root examples/reference-conv
+node scripts/check-trace.mjs --root examples/reference-conv
+node scripts/check-contract.mjs --root examples/reference-conv
+node scripts/check-spec-language.mjs --root examples/reference-conv
 node scripts/check-matrix-coverage.mjs
 ```
 
-契约一致性门禁默认扫描仓库根的 `specs/`。本仓不带产品 spec，随仓提供了一份 P1-CONV 参考输入，放在 `examples/reference-conv/`，用 `--root` 指向它：
+实测全部退出码 0：结构门禁 42 项通过、0 项失败、57 条 warning，warning 来自按源仓原样复制的在途变更包缺少十节模板的若干节；追溯门禁 188 项检查、失败 0、提示 0，TREE 的 13 个 PRD 与 TRACEABILITY 的声明数、实际数一致；契约门禁 7 项通过、0 条提示；语言门禁 0 error、16 warning，warning 是 R2 要求数字补比较符或单位；矩阵覆盖率 66/66（100%），2 条提示是组件 spec 没有独立模板文件。
 
-```powershell
-node scripts/check-contract.mjs --root examples/reference-conv
-```
+`--root` 指定参考输入的根目录，门禁从该目录解析 `specs/` 与 `docs/`。不带 `--root` 时读当前仓库根，本仓没有 `specs/changes` 与 `docs/product`，结构门禁退出码 2、追溯门禁报 2 条 T1，这两个结果说明缺接入方输入，不作为本仓的失败结论。
 
-其余五个门禁脚本面向接入本框架的项目仓，读取该项目仓的 `specs/`、`docs/product/` 与 `docs/testing/`，在框架仓内单独运行没有输入，只用于自检；性能脚本 `measure-perf.mjs` 只测 HTTP(S) 端点，弱网脚本 `measure-net.mjs` 只测本机回环的时延与吞吐，两者的自检都在本机临时端口完成，不访问外部网络：
+增量覆盖率与证据两道门禁读取改动文件清单与按变更组织的证据，参考输入没有这两类输入，因此只跑自检。九个脚本的自检都不访问外部网络，性能与弱网脚本在本机临时端口完成：
 
 ```powershell
 node scripts/check-gates.mjs --self-test
 node scripts/check-trace.mjs --self-test
-node scripts/check-spec-language.mjs --self-test
 node scripts/check-contract.mjs --self-test
+node scripts/check-matrix-coverage.mjs --self-test
+node scripts/check-spec-language.mjs --self-test
 node scripts/check-incremental-coverage.mjs --self-test
 node scripts/check-evidence.mjs --self-test
-node scripts/check-matrix-coverage.mjs --self-test
 node scripts/measure-perf.mjs --self-test
 node scripts/measure-net.mjs --self-test
 ```
+
+自检断言数为结构 15、追溯 11、契约 18、语言 10、增量覆盖 14、证据 14、性能 34、弱网 33，矩阵自检以 PASS 结束，九条命令的退出码都是 0。
 
 ## 仓库结构
 
@@ -94,11 +98,11 @@ moxian-framework/
 
 ## 与源仓的差异
 
-- `docs/MOXIAN.md`、`docs/TASK-MATRIX.md` 等 70 个文件按字节复制，正文未改；v1.6 新增的 12 份专项模板、两份验收报告与 `STRESS-RERUN-25-20261125.md` 均按原样保留，v1.7 新增的 `ACCEPT-MOXIAN-V17-20261125.md` 与 v1.7.1 新增的 `ACCEPT-MOXIAN-V171-20261125.md` 同样逐字节复制。
+- `docs/MOXIAN.md`、`docs/TASK-MATRIX.md` 等 70 个文件按字节复制，正文未改；v1.6 新增的 12 份专项模板、两份验收报告与 `STRESS-RERUN-25-20261125.md` 均按原样保留，v1.7 新增的 `ACCEPT-MOXIAN-V17-20261125.md` 与 v1.7.1 新增的 `ACCEPT-MOXIAN-V171-20261125.md` 同样逐字节复制。唯一例外是 `docs/GATES.md`：第 4 节新增 4.1 小节写镜像仓的参考输入运行口径，其余正文未改。
 - 源仓 `docs/process/templates/` 下被矩阵引用的 7 份模板并入 `docs/templates/`，分别是 proposal、spec、design、tasks、test-plan、evidence 与 RETRO。不并入时矩阵门禁会因模板文件缺失而达不到 66/66。
 - `docs/plan/DECISIONS.md` 在 v1.7 时是 ADR 落点占位；v1.7.1 起同步源仓决策记录，带入 DEC-11 至 DEC-33。矩阵门禁只要求该文件存在，内容不参与判定。
 - 五个门禁脚本的 `docs` 路径常量、提示文案与矩阵自检夹具改到新布局，`check-trace.mjs` 与 `check-spec-language.mjs` 没有 `docs` 路径可改，`measure-perf.mjs` 只改注释出处；v1.7 新增的 `measure-net.mjs` 不含 `docs` 引用。三个脚本的自检计数输出随 v1.7 带入。v1.7.1 更新 `check-gates.mjs`、`check-contract.mjs`、`check-matrix-coverage.mjs` 与 `check-spec-language.mjs` 四个脚本的判定实现与自检计数，N/A 声明、历史包两段式 Covers 编号、ADR 与复现记录模板名册、R3 与 R7 判定随之生效，自检断言分别为 15、18、22 与 10 条，合计 65 条。
-- `examples/` 下的 `ACCEPT-MOXIAN-V15-20261125.md` 与 `REPLAY-CHG-CONV-007.md` 取自 `docs/framework/accept/`，未改一字；`examples/reference-conv/specs/` 是从源仓复制的 P1-CONV 最小输入集，v1.7 同步了 7 个变更包 spec 的首部字段，v1.7.1 同步了 P1-CONV 的契约表与后端、设计、前端、产品四列 spec，契约门禁在参考输入上 7 项全部通过、0 条提示。
+- `examples/` 下的 `ACCEPT-MOXIAN-V15-20261125.md` 与 `REPLAY-CHG-CONV-007.md` 取自 `docs/framework/accept/`，未改一字；`examples/reference-conv/specs/` 是从源仓复制的 P1-CONV 最小输入集，v1.7 同步了 7 个变更包 spec 的首部字段，v1.7.1 同步了 P1-CONV 的契约表与后端、设计、前端、产品四列 spec，契约门禁在参考输入上 7 项全部通过、0 条提示；本次再从源仓补入 7 个变更包的 tasks、test-plan 与 evidence，CHG-CONV-007 另补 proposal，并新增 `docs/product/TREE.md`、`docs/product/TRACEABILITY.md` 与 `specs/test/e2e/README.md`，使结构、追溯与语言三道门禁也能在参考输入上跑通。
 - `LICENSE` 从源仓根目录原样复制，为 MIT 许可，著作权人 YJM1024。源仓已有许可证，因此没有新建待定许可文件。
 
 ## 版本与许可
@@ -108,8 +112,8 @@ moxian-framework/
 ## 已知遗留
 
 - `docs/` 正文中的 576 处 `docs/framework/…` 自引用未做批量替换，阅读时需按上一节映射。
-- 契约门禁不带 `--root` 时扫描不到 `specs/contract`，只报一条 MX-G-26 错误，结果为 0 项通过、1 项未通过；带 `--root examples/reference-conv` 时为 7 项全部通过、0 条提示。
-- `check-trace.mjs` 不带 `--root` 时按接入方仓的 `docs/product/TREE.md` 与 `TRACEABILITY.md` 取证，框架仓没有这两份文件，裸跑报 2 条 T1；自检 11 条断言通过。
+- 不传 `--root` 时五道门禁读当前仓库根：契约门禁扫描不到 `specs/contract`，报 1 条 MX-G-26；追溯门禁缺 `docs/product/TREE.md` 与 `TRACEABILITY.md`，报 2 条 T1；结构门禁因 `specs/changes` 不可读以退出码 2 结束。三个结果都来自缺接入方输入，README 的命令统一用 `--root examples/reference-conv`，不影响本仓自验。
+- `check-trace.mjs` 自带 11 条断言的自检通过，`check-spec-language.mjs` 的自检为 10 条，两者的门禁判定在参考输入上分别是 188 项与 0 error。
 - `check-spec-language.mjs` 的规则来源 `docs/process/SPEC-STANDARD.md` 不在本次抽取范围，未随仓提供，脚本注释保留了该出处。
 - `measure-net.mjs` 已在 v1.7 建立并带自检；框架仓内没有真实网络测量对象，弱网三档实测数据仍需接入方按 `docs/domains/testing.md` 的口径自行采集。
 - `docs/plan/DECISIONS.md` 自 v1.7.1 起同步源仓决策记录，含 DEC-11 至 DEC-33；`docs/process/` 只随仓提供 `RUNBOOK.md`，`SPEC-STANDARD.md` 与其余 process 规范不在抽取范围。
