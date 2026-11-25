@@ -124,9 +124,11 @@ P2 与 P4 与 `f478185` 的剩余差异只有折行。P2 为 +36/−18 行、P4 
 
 改动边界如下。`scripts/` 下四个脚本在签字后已完成修订，报告定稿前只读并复跑，没有再改；但 `specs/` 不是未改，改动面见第 5.2 节。本次报告修订只改本报告与 `GATES.md`，不含 `scripts/`，也不含 `specs/contract/CONV/contract.md` 的契约表取值。`docs/framework/templates/` 与 `docs/process/templates/` 未改，模板各自的版本序列不变。仓库根与 `docs/framework/` 下没有 VERSION 文件，本次没有新建。
 
-`moxian-framework` 是独立镜像仓库，带自己的 `.git` 与 `docs/` 副本。2026-11-25 按用户批准完成两次同步并推送 `main`；第一次提交 `837a8539` 同步 27 个文件，其中新增 2 个（`docs/accept/ACCEPT-MOXIAN-V171-20261125.md` 与 `docs/process/RUNBOOK.md`）、更新 25 个，`VERSION` 由 v1.7 改为 v1.7.1。
+`moxian-framework` 是独立镜像仓库，带自己的 `.git` 与 `docs/` 副本。2026-11-25 按用户批准完成镜像同步并推送 `main`，第一次提交 `837a8539` 同步 27 个文件，其中新增 2 个（`docs/accept/ACCEPT-MOXIAN-V171-20261125.md` 与 `docs/process/RUNBOOK.md`）、更新 25 个，`VERSION` 由 v1.7 改为 v1.7.1。
 
-第二次提交 `2fd0ce54` 只同步 3 个文件，`docs/GATES.md`、`docs/MOXIAN.md` 与 `docs/README.md` 同主仓 `docs/framework/` 下同名文件的三对 SHA256 相同；远端 `main` 指向 `2fd0ce54`，与本地 `HEAD` 一致，可用 `git ls-remote origin main` 复核。
+第二次提交 `2fd0ce54` 只同步 3 个文件，`docs/GATES.md`、`docs/MOXIAN.md` 与 `docs/README.md` 同主仓 `docs/framework/` 下同名文件的三对 SHA256 相同，该次推送后远端 `main` 与本地 `HEAD` 一致。
+
+本节修订同步到镜像仓时另产生只改 `docs/MOXIAN.md` 与 `docs/accept/ACCEPT-MOXIAN-V171-20261125.md` 的提交，推送后远端 `main` 仍与本地 `HEAD` 一致，可用 `git ls-remote origin main` 与主仓同名文件的 SHA256 复核。
 
 镜像仓没有产品输入，直接运行 `node scripts/check-trace.mjs` 与 `node scripts/check-gates.mjs` 会分别以退出码 1 与 2 结束；前者报 2 条 T1，缺 `docs/product/TREE.md` 与 `TRACEABILITY.md`，后者报 `specs/changes` 不可读。这两条属于缺输入的门禁口径，按镜像仓 `CHANGELOG.md` 与 `README.md` 已登记的执行方式处理，不代表源仓门禁回归。
 
