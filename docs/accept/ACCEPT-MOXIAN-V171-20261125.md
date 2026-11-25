@@ -124,7 +124,13 @@ P2 与 P4 与 `f478185` 的剩余差异只有折行。P2 为 +36/−18 行、P4 
 
 改动边界如下。`scripts/` 下四个脚本在签字后已完成修订，报告定稿前只读并复跑，没有再改；但 `specs/` 不是未改，改动面见第 5.2 节。本次报告修订只改本报告与 `GATES.md`，不含 `scripts/`，也不含 `specs/contract/CONV/contract.md` 的契约表取值。`docs/framework/templates/` 与 `docs/process/templates/` 未改，模板各自的版本序列不变。仓库根与 `docs/framework/` 下没有 VERSION 文件，本次没有新建。
 
-`moxian-framework/VERSION` 仍是 v1.7，它是独立镜像仓库，带自己的 `.git` 与 `docs/framework` 副本。本轮不执行 git 写操作，无法在该仓库提交与推送，所以镜像同步暂不做；阻塞条件是独立仓库的提交授权，解除条件是由用户批准后在 `moxian-framework` 单独执行同步，责任人为镜像维护人。本次没有删除文件，没有移动文件；git 只执行了只读的 `diff` 与 `status`，没有提交、推送或改动引用。
+`moxian-framework` 是独立镜像仓库，带自己的 `.git` 与 `docs/` 副本。2026-11-25 按用户批准完成两次同步并推送 `main`；第一次提交 `837a8539` 同步 27 个文件，其中新增 2 个（`docs/accept/ACCEPT-MOXIAN-V171-20261125.md` 与 `docs/process/RUNBOOK.md`）、更新 25 个，`VERSION` 由 v1.7 改为 v1.7.1。
+
+第二次提交 `2fd0ce54` 只同步 3 个文件，`docs/GATES.md`、`docs/MOXIAN.md` 与 `docs/README.md` 同主仓 `docs/framework/` 下同名文件的三对 SHA256 相同；远端 `main` 指向 `2fd0ce54`，与本地 `HEAD` 一致，可用 `git ls-remote origin main` 复核。
+
+镜像仓没有产品输入，直接运行 `node scripts/check-trace.mjs` 与 `node scripts/check-gates.mjs` 会分别以退出码 1 与 2 结束；前者报 2 条 T1，缺 `docs/product/TREE.md` 与 `TRACEABILITY.md`，后者报 `specs/changes` 不可读。这两条属于缺输入的门禁口径，按镜像仓 `CHANGELOG.md` 与 `README.md` 已登记的执行方式处理，不代表源仓门禁回归。
+
+本节镜像同步记录于 2026-11-25 验收签字后补记，第 7 节第 6 项的核对状态同批更新。
 
 ## 7 验收人签字位
 
@@ -135,7 +141,7 @@ P2 与 P4 与 `f478185` 的剩余差异只有折行。P2 为 +36/−18 行、P4 
 3. `GATES.md` 第 3.4.1 节、第 154 与 155 行、`TASK-MATRIX.md` 第 112 行的口径一致，规则总数仍为 68 条。
 4. 十一份文档的版本行均为 v1.7.1，v1.7 的历史记录保留，没有把历史行覆盖掉。
 5. 六项复跑可复现第 3 节的数字，`check-gates` 与 `check-contract` 均为 0 warning。
-6. 第 5.1 与 5.2 节两类已知提示的保留理由成立，`moxian-framework` 镜像待同步一项已登记。
+6. 第 5.1 与 5.2 节两类已知提示的保留理由成立，`moxian-framework` 镜像同步已完成并核对一致，见第 6 节。
 7. 第 5.2 节列出的 `specs/` 改动面与逐行复核结论成立。工作树相对 `f478185` 的 86 个文件差异中，P2 与 P4 只剩折行、语义差异为 0；若验收要求字节级一致，需要在回退折行并接受 R6 提示与另写不折行修法之间选择。
 8. 第 5.3 与 5.4 节两条已知缺口成立。字段类型一致性与状态矩阵逐格核对没有脚本实现；CONV 的状态取值写中文，使 MX-G-28 的缺失状态、缺失迁移与未知 UI 状态名判定实际为空跑。两条都按另开变更包处理，本轮只登记不修改。
 

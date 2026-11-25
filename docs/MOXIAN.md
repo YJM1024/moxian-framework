@@ -1489,7 +1489,7 @@ v1.7.1 为维护版，只改版本行与 `GATES.md` 第 3.4.1 节的 N/A 声明�
 |---|---|---|---|---|---|
 | 2026-11-24 | v1.2 | `accept/ACCEPT-BATCH4-R2.md`，130 行 | 四批产出已合入同一总册；复验通过冻结；11 条必修项全部达到复核证据，P-07 的生成器哈希与数值一致性在规则、检查项、失败样例与脚本映射四处齐全，四个脚本自检退出码均为 0 | 阻断冻结 0 条；7 条遗留带入，未决与待承接 53 条，严格未决 52 条 | mx-freeze |
 | 2026-11-25 | v1.6 | `accept/ACCEPT-MOXIAN-V16-20261125.md`，七节 | 待独立验收，签字栏留空；`check-matrix-coverage` 与 `check-contract` 实跑 PASS，六脚本自检合计 73 项 PASS，`measure-perf.mjs` 自检 34 项 PASS | 欠账 6 条，均不阻断冻结 | mx-align-16 |
-| 2026-11-25 | v1.7 | `accept/ACCEPT-MOXIAN-V17-20261125.md`，七节 | 待独立验收，签字栏留空；`check-trace`、`check-matrix-coverage`、`check-contract` 与 `check-gates` 实跑 PASS，`check-gates` error 0；`measure-net.mjs` 自检 33 项 PASS，`check-evidence` 14 项 PASS 13、WARN 1、error 0 | 已知遗留 5 项，另有 KD-05 1 条开放，详见报告第 4、5 节 | mx-v17-freeze |
+| 2026-11-25 | v1.7 | `accept/ACCEPT-MOXIAN-V17-20261125.md`，七节 | 已签字，验收人 `mx-accept-v17`，验收日期 2026-11-25，结论 pass，签字见报告第 6 节；`check-trace`、`check-matrix-coverage`、`check-contract` 与 `check-gates` 实跑 PASS，`check-gates` error 0；`measure-net.mjs` 自检 33 项 PASS，`check-evidence` 14 项 PASS 13、WARN 1、error 0 | 已知遗留 4 条，KD-05 已由 `repo-sync-v17` 同步并推送（`dd12e9a`）关闭，详见报告第 4、5 节 | mx-v17-freeze |
 | 2026-11-25 | v1.7.1 | `accept/ACCEPT-MOXIAN-V171-20261125.md`，七节 | 已签字，验收人 `mx-accept-v171`，验收日期 2026-11-25，结论 pass；`check-gates` 120 passed、0 failed、warning 0，`check-contract` 7 passed、0 failed、warning 0，`check-matrix-coverage` 66/66、warning 2，`check-spec-language` error 0、warning 59，`check-trace` 684 项，四脚本自检合计 65 项，退出码均为 0 | 矩阵 2 条与 spec 语言 59 条提示按既有口径保留；维护版覆盖范围见报告第 6 节 | mx-v171-bump |
 
 本记录是 v1.2 的验收证据，报告全文见 `accept/ACCEPT-BATCH4-R2.md`。报告第六节的 7 条遗留不改变规则编号、门禁行为与验收判据，回写安排在 v1.3；第一条要求把附录 A 与 D.7 的 50 条 MX-G 规则改为 52 条，其余六条按报告列出的责任人与要求执行。冻结后本册只按 MX-1-14 与第 12 章修订，历史记录不就地改写。
