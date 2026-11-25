@@ -1,8 +1,8 @@
-# 墨线框架 v1.7.2
+# 墨线框架 v1.7.3
 
 墨线是一套面向单机、多智能体协作的规格驱动开发框架。它用中文文档定义流程、角色与判据，用可执行脚本把契约、追溯、覆盖率与证据要求变成门禁，适合在一个代码仓内由设计、前端、后端与验收角色分头推进需求。
 
-本仓是框架 v1.7.2 的独立抽取，同步于 2026-11-25。源仓 `docs/framework/` 的 72 个文件按原样复制到 `docs/`，另同步 `docs/process/RUNBOOK.md` 与源仓 `docs/plan/DECISIONS.md`；七个门禁脚本与两个性能测量脚本沿用，其中五个门禁脚本按新布局改写 `docs` 路径，四个脚本随 v1.7.2 更新判定实现与自检计数，另附 V15 至 V172 五份版本验收报告与契约门禁的参考输入。远端为 `git@github.com:YJM1024/moxian-framework.git`，`main` 已推送，本地 HEAD 与远端一致。
+本仓是框架 v1.7.3 的独立抽取，同步于 2026-11-25。v1.7.3 为维护版，只同步推理档位口径涉及的 11 个文档，其余内容与 v1.7.2 相同。源仓 `docs/framework/` 的 72 个文件按原样复制到 `docs/`，另同步 `docs/process/RUNBOOK.md` 与源仓 `docs/plan/DECISIONS.md`；七个门禁脚本与两个性能测量脚本沿用，其中五个门禁脚本按新布局改写 `docs` 路径，四个脚本随 v1.7.2 更新判定实现与自检计数，另附 V15 至 V172 五份版本验收报告与契约门禁的参考输入。远端为 `git@github.com:YJM1024/moxian-framework.git`，`main` 已推送，本地 HEAD 与远端一致。
 
 ## 四层结构
 
@@ -107,7 +107,7 @@ moxian-framework/
 
 ## 版本与许可
 
-`VERSION` 为 `v1.7.2`，对应 2026-11-25 的 v1.7.2 补登版，版本演进见 `CHANGELOG.md`；v1.7 验收报告见 `docs/accept/ACCEPT-MOXIAN-V17-20261125.md`，v1.7.1 验收报告见 `docs/accept/ACCEPT-MOXIAN-V171-20261125.md`，v1.7.2 验收报告见 `docs/accept/ACCEPT-MOXIAN-V172-20261125.md`，三份均于 2026-11-25 由独立验收人签字通过，结论 pass（验收人分别为 `mx-accept-v17`、`mx-accept-v171` 与 `mx-accept-v172`）。许可沿用源仓的 MIT 许可，见 `LICENSE`；如需更换许可方式，应先取得著作权人确认。
+`VERSION` 为 `v1.7.3`，对应 2026-11-25 的 v1.7.3 维护版，版本演进见 `CHANGELOG.md`；v1.7 验收报告见 `docs/accept/ACCEPT-MOXIAN-V17-20261125.md`，v1.7.1 验收报告见 `docs/accept/ACCEPT-MOXIAN-V171-20261125.md`，v1.7.2 验收报告见 `docs/accept/ACCEPT-MOXIAN-V172-20261125.md`，三份均于 2026-11-25 由独立验收人签字通过，结论 pass（验收人分别为 `mx-accept-v17`、`mx-accept-v171` 与 `mx-accept-v172`）；v1.7.3 为推理档位口径调整，不单写验收报告，待后续验收合并。许可沿用源仓的 MIT 许可，见 `LICENSE`；如需更换许可方式，应先取得著作权人确认。
 
 ## 已知遗留
 
@@ -116,5 +116,5 @@ moxian-framework/
 - `check-trace.mjs` 自带 11 条断言的自检通过，`check-spec-language.mjs` 的自检为 17 条，两者的门禁判定在参考输入上分别是 188 项与 0 error、0 warning。
 - `check-spec-language.mjs` 的规则来源 `docs/process/SPEC-STANDARD.md` 不在本次抽取范围，未随仓提供，脚本注释保留了该出处。
 - `measure-net.mjs` 已在 v1.7 建立并带自检；框架仓内没有真实网络测量对象，弱网三档实测数据仍需接入方按 `docs/domains/testing.md` 的口径自行采集。
-- `docs/plan/DECISIONS.md` 自 v1.7.1 起同步源仓决策记录，含 DEC-11 至 DEC-33；`docs/process/` 只随仓提供 `RUNBOOK.md`，`SPEC-STANDARD.md` 与其余 process 规范不在抽取范围。
+- `docs/plan/DECISIONS.md` 自 v1.7.1 起同步源仓决策记录，含 DEC-11 至 DEC-34；`docs/process/` 只随仓提供 `RUNBOOK.md`，`SPEC-STANDARD.md` 与其余 process 规范不在抽取范围。
 - 远端为 `git@github.com:YJM1024/moxian-framework.git`，`main` 已推送；推送后以 `git ls-remote origin main` 与本地 `HEAD` 一致为准。
