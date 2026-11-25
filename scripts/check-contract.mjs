@@ -84,6 +84,50 @@ const NA_LABELS = {
 const UI_STATES = ['default', 'hover', 'focus', 'active', 'disabled', 'loading', 'empty', 'error']
 const CONTRACT_STATUS = ['草稿', '冻结', '已变更']
 
+// 契约表类 2 用产品展示名，后端状态机用存储值，前端只展示四态。映射写死在这里，
+// 契约表、后端 spec、前端 spec 任一侧改名都会在下一次门禁里暴露，不靠备注列人工对照。
+const CONTRACT_STATE_MAP = {
+  未开始: { storage: 'pending', display: 'pending' },
+  排队: { storage: 'queued', display: 'pending' },
+  进行中: { storage: 'running', display: 'running' },
+  已完成: { storage: 'done', display: 'done' },
+  失败: { storage: 'failed', display: 'failed' },
+  已取消: { storage: 'cancelled', display: 'failed' },
+  已中断: { storage: 'interrupted', display: 'failed' },
+  阻塞: { storage: 'blocked', display: 'pending' },
+}
+
+const SPEC_TYPE_ALIASES = new Map([
+  ['string', 'string'],
+  ['text', 'string'],
+  ['varchar', 'string'],
+  ['char', 'string'],
+  ['uuid', 'string'],
+  ['timestamp', 'string'],
+  ['datetime', 'string'],
+  ['时间戳', 'string'],
+  ['int', 'number'],
+  ['integer', 'number'],
+  ['bigint', 'number'],
+  ['real', 'number'],
+  ['number', 'number'],
+  ['float', 'number'],
+  ['double', 'number'],
+  ['bool', 'bool'],
+  ['boolean', 'bool'],
+  ['json', 'object'],
+  ['object', 'object'],
+  ['map', 'object'],
+  ['array', 'array'],
+  ['list', 'array'],
+  ['string[]', 'string[]'],
+  ['object[]', 'object[]'],
+  ['array<string>', 'string[]'],
+  ['array<object>', 'object[]'],
+  ['string数组', 'string[]'],
+  ['object数组', 'object[]'],
+])
+
 const CLASSES = [
   {
     key: 'fields',
@@ -507,24 +551,83 @@ function extractIdentifier(value) {
   return raw
 }
 
+function specFieldColumnIndex(table) {
+  const headers = table.headers.map((header) => cleanInline(header).replace(/\s+/g, ''))
+  const hasType = headers.some((header) => /^类型$/i.test(header))
+  return headers.findIndex(
+    (header) =>
+      /^(?:字段|字段名|查询参数|参数|列|props)$/i.test(header) ||
+      (hasType && /^名称$/i.test(header)) ||
+      /关键字段$/i.test(header),
+  )
+}
+
+function normalizeSpecType(raw) {
+  let value = cleanInline(raw).toLowerCase()
+  value = value.split(/[|｜/,，;；\s]/)[0] ?? ''
+  value = value.replace(/[（(].*$/, '')
+  return SPEC_TYPE_ALIASES.get(value) ?? value
+}
+
 function extractSpecFields(text) {
   const result = new Set()
   for (const table of parseMarkdownTables(text)) {
-    const headingRelevant = /字段|接口|props|组件|数据|请求|响应/i.test(table.heading)
-    const headerRelevant = table.headers.some((header) => /字段|名称|props/i.test(header))
-    if (!headingRelevant && !headerRelevant) continue
-    let fieldIndex = table.headers.findIndex((header) => /字段|名称|props/i.test(header))
-    if (fieldIndex < 0) fieldIndex = 0
+    const fieldIndex = specFieldColumnIndex(table)
+    if (fieldIndex < 0) continue
     for (const row of table.rows) {
       const identifier = extractIdentifier(row.cells[fieldIndex] ?? '')
       if (identifier) result.add(normalizeField(identifier))
+    }
+    // 字段名也可能直接写在表头上（如后端 §17.3.1 的 displayStatus 列），
+    // 只认驼峰形式的单标识符，避免把 default、hover 这类状态值当成字段。
+    for (const header of table.headers) {
+      const cleaned = cleanInline(header)
+      if (/^[a-z]+[A-Z][A-Za-z0-9]*$/.test(cleaned)) result.add(normalizeField(cleaned))
     }
   }
   return result
 }
 
+function extractSpecFieldTypes(text) {
+  const result = new Map()
+  for (const table of parseMarkdownTables(text)) {
+    const fieldIndex = specFieldColumnIndex(table)
+    if (fieldIndex < 0) continue
+    const typeIndex = table.headers.findIndex((header) => /^类型$/i.test(cleanInline(header).replace(/\s+/g, '')))
+    if (typeIndex < 0) continue
+    for (const row of table.rows) {
+      const identifier = extractIdentifier(row.cells[fieldIndex] ?? '')
+      if (!identifier) continue
+      const key = normalizeField(identifier)
+      if (!result.has(key)) result.set(key, [])
+      result.get(key).push({
+        raw: cleanInline(row.cells[fieldIndex]),
+        type: normalizeSpecType(row.cells[typeIndex]),
+        declared: cleanInline(row.cells[typeIndex]),
+        line: row.line,
+        headingLine: table.headingLine,
+      })
+    }
+  }
+  return result
+}
+
+function sourceRefs(source) {
+  const refs = []
+  for (const match of String(source ?? '').matchAll(/§\s*([\d]+(?:\.[\d]+)*)/g)) refs.push({ kind: 'section', value: match[1] })
+  for (const match of String(source ?? '').matchAll(/\bN([1-9])\b/g)) refs.push({ kind: 'item', value: `N${match[1]}` })
+  return refs
+}
+
+function declarationMatchesSource(declaration, refs, specLines) {
+  if (refs.length === 0) return true
+  const heading = String(specLines[declaration.headingLine - 1] ?? '')
+  return refs.some((ref) => (ref.kind === 'section' ? heading.includes(ref.value) : heading.includes(ref.value)))
+}
+
 function extractSpecStates(text) {
   const states = new Set()
+  const tableStates = new Set()
   const transitions = new Set()
   const stateToken = (value) => {
     const cleaned = cleanInline(value)
@@ -532,11 +635,15 @@ function extractSpecStates(text) {
     if (/[\u4e00-\u9fff]/.test(cleaned) && !UI_STATES.includes(cleaned)) return ''
     return /^(?:[a-z][a-z0-9_]*)$/.test(cleaned) ? cleaned : ''
   }
+  let structured = false
+  let hasTransitionTable = false
   for (const table of parseMarkdownTables(text)) {
     const headers = table.headers.map((header) => cleanInline(header))
-    const fromIndex = headers.findIndex((header) => /^从状态$|^from$/i.test(header))
-    const toIndex = headers.findIndex((header) => /^到状态$|^to$/i.test(header))
+    const fromIndex = headers.findIndex((header) => /^从状态$|^从$|^from$/i.test(header))
+    const toIndex = headers.findIndex((header) => /^到状态$|^到$|^to$/i.test(header))
     if (fromIndex >= 0 && toIndex >= 0) {
+      structured = true
+      hasTransitionTable = true
       for (const row of table.rows) {
         const from = stateToken(row.cells[fromIndex])
         const to = stateToken(row.cells[toIndex])
@@ -546,31 +653,47 @@ function extractSpecStates(text) {
       }
       continue
     }
-    const headerStates = headers.filter((header) => UI_STATES.includes(header.toLowerCase()) || stateToken(header))
+    const headerStates = headers.filter((header) => UI_STATES.includes(header.toLowerCase()))
     if (headerStates.length > 0) {
-      for (const header of headerStates) {
+      structured = true
+      for (const header of headers) {
         const token = stateToken(header)
-        if (token) states.add(token)
+        if (token) {
+          states.add(token)
+          tableStates.add(token)
+        }
       }
       continue
     }
-    const stateIndex = headers.findIndex((header) => /状态$|^状态$/.test(header))
-    if (stateIndex >= 0) {
+    const stateIndex = headers.findIndex((header) => /^(?:状态|存储\s*status)$/i.test(header))
+    const displayIndex = headers.findIndex((header) => /^displaystatus$/i.test(header))
+    if (stateIndex >= 0 || displayIndex >= 0) {
+      structured = true
       for (const row of table.rows) {
-        const token = stateToken(row.cells[stateIndex])
-        if (token) states.add(token)
+        for (const index of [stateIndex, displayIndex]) {
+          if (index < 0) continue
+          const token = stateToken(row.cells[index])
+          if (token) {
+            states.add(token)
+            tableStates.add(token)
+          }
+        }
       }
     }
   }
-  for (const line of splitLines(text)) {
-    const match = line.match(/`?([a-z][a-z0-9_]*)`?\s*(?:-->|->|→)\s*`?([a-z][a-z0-9_]*)`?/)
-    if (match) {
-      states.add(match[1])
-      states.add(match[2])
-      transitions.add(`${match[1]}->${match[2]}`)
+  // 散文里的 a -> b 只在没有结构化状态表时收集。spec 一旦有状态表，
+  // 散文箭头只是解释性文字，扫进来会把 rror、ode、vent 这类词碎片当状态。
+  if (!structured) {
+    for (const line of splitLines(text)) {
+      const match = line.match(/`?([a-z][a-z0-9_]*)`?\s*(?:-->|->|→)\s*`?([a-z][a-z0-9_]*)`?/)
+      if (match) {
+        states.add(match[1])
+        states.add(match[2])
+        transitions.add(`${match[1]}->${match[2]}`)
+      }
     }
   }
-  return { states, transitions }
+  return { states, tableStates, transitions, hasTransitionTable }
 }
 
 function extractSpecErrors(text) {
@@ -915,6 +1038,25 @@ function runMxG26(run, contract) {
         message: `${definition.name} 缺列 ${missingColumns.join('、')}`,
       })
     }
+    for (const row of parsed.table.rows) {
+      for (const column of definition.columns) {
+        const index = normalizedHeaders.indexOf(normalizeColumn(column))
+        if (index < 0) continue
+        if (cleanInline(row.cells[index] ?? '') !== '') continue
+        problems += 1
+        record(check, run, {
+          rule: 'MX-G-26',
+          severity: 'error',
+          path: contract.rel,
+          line: row.line,
+          item: '缺格',
+          expected: `${definition.name} 每行「${column}」有值`,
+          actual: '单元格为空',
+          hint: `在第 ${row.line} 行补「${column}」；确实不适用写「不适用」并说明理由`,
+          message: `${definition.name} 第 ${row.line} 行缺「${column}」`,
+        })
+      }
+    }
     if (parsed.table.rows.length === 0) {
       problems += 1
       record(check, run, {
@@ -1079,7 +1221,12 @@ function runMxG27(run, contract) {
           ? 'backend'
           : null
       if (!target) continue
-      byTarget[target].set(normalizeField(identifier), { raw: cell(object, '字段路径') || identifier, line: row.line })
+      byTarget[target].set(normalizeField(identifier), {
+        raw: cell(object, '字段路径') || identifier,
+        type: cell(object, '类型'),
+        source,
+        line: row.line,
+      })
     }
   }
   let problems = 0
@@ -1126,6 +1273,8 @@ function runMxG27(run, contract) {
       continue
     }
     const specFields = extractSpecFields(spec.text)
+    const specTypes = extractSpecFieldTypes(spec.text)
+    const specLines = splitLines(spec.text)
     const missing = []
     for (const [field, info] of contractFields) {
       if (!specFields.has(field)) missing.push(info.raw)
@@ -1158,8 +1307,31 @@ function runMxG27(run, contract) {
         message: `${labels[target]}多出字段 ${extra.join('、')}`,
       })
     }
+    for (const [field, info] of contractFields) {
+      const candidates = specTypes.get(field) ?? []
+      if (candidates.length === 0) continue
+      const contractType = normalizeSpecType(info.type)
+      if (!contractType) continue
+      const refs = sourceRefs(`${info.source} ${info.raw}`)
+      const scoped = candidates.filter((declaration) => declarationMatchesSource(declaration, refs, specLines))
+      const pool = scoped.length > 0 ? scoped : candidates
+      if (pool.some((declaration) => declaration.type === contractType)) continue
+      const declared = pool[0]
+      problems += 1
+      record(check, run, {
+        rule: 'MX-G-27',
+        severity: 'error',
+        path: contract.rel,
+        line: info.line,
+        item: '字段类型一致',
+        expected: `契约表 ${info.raw} 类型 ${contractType}`,
+        actual: `${spec.rel}:${declared.line} 声明 ${declared.declared}`,
+        hint: `核对两侧声明，改契约表或 ${spec.rel}:${declared.line}，不要只改一侧`,
+        message: `${labels[target]}字段 ${info.raw} 类型不一致：契约 ${contractType}（contract.md:${info.line}），${spec.rel}:${declared.line} 声明 ${declared.type}`,
+      })
+    }
   }
-  return finishCheck(check, run, problems === 0 ? '字段一致' : `${problems} 处字段缺失`)
+  return finishCheck(check, run, problems === 0 ? '字段与类型一致' : `${problems} 处字段或类型不一致`)
 }
 
 function runMxG28(run, contract) {
@@ -1169,12 +1341,19 @@ function runMxG28(run, contract) {
     '状态值一致',
     contract.rel,
     1,
-    '类 2 状态全集与迁移同设计、前端一致；UI 状态取八态',
+    '类 2 状态与迁移同后端状态机、前端展示态一致；UI 状态取八态',
   )
   const table = contract.classes.states.table
   const contractStates = new Set()
   const contractTransitions = new Set()
+  const zhStates = new Set()
+  const zhTransitions = new Set()
   let uiObject = false
+  const stateKey = (token) => {
+    const cleaned = cleanInline(token)
+    if (!cleaned || cleaned === '同上' || cleaned === '无' || cleaned === '—' || cleaned === '-') return ''
+    return cleaned
+  }
   if (table) {
     for (const row of table.rows) {
       const object = rowObject(table, row)
@@ -1182,16 +1361,21 @@ function runMxG28(run, contract) {
       if (/按钮|卡片|卡|面板|组件|元素|详情|输入|菜单|弹窗|tab/i.test(objectName)) uiObject = true
       const setRaw = cell(object, '状态取值全集')
       for (const token of setRaw.split(/[、,，/\s]+/)) {
-        const cleaned = cleanInline(token)
-        if (!cleaned || cleaned === '同上' || cleaned === '无') continue
-        if (/^[a-z][a-z0-9_]*$/.test(cleaned)) contractStates.add(cleaned)
+        const cleaned = stateKey(token)
+        if (!cleaned) continue
+        if (CONTRACT_STATE_MAP[cleaned]) zhStates.add(cleaned)
+        else if (/^[a-z][a-z0-9_]*$/.test(cleaned)) contractStates.add(cleaned)
       }
-      const from = cleanInline(cell(object, '从状态'))
-      const to = cleanInline(cell(object, '到状态'))
+      const from = stateKey(cell(object, '从状态'))
+      const to = stateKey(cell(object, '到状态'))
       for (const token of [from, to]) {
-        if (/^[a-z][a-z0-9_]*$/.test(token)) contractStates.add(token)
+        if (CONTRACT_STATE_MAP[token]) zhStates.add(token)
+        else if (/^[a-z][a-z0-9_]*$/.test(token)) contractStates.add(token)
       }
-      if (/^[a-z][a-z0-9_]*$/.test(from) && /^[a-z][a-z0-9_]*$/.test(to)) {
+      if (!from || !to) continue
+      if (CONTRACT_STATE_MAP[from] && CONTRACT_STATE_MAP[to]) {
+        if (from !== to) zhTransitions.add(`${from}->${to}`)
+      } else if (/^[a-z][a-z0-9_]*$/.test(from) && /^[a-z][a-z0-9_]*$/.test(to)) {
         contractTransitions.add(`${from}->${to}`)
       }
     }
@@ -1215,11 +1399,147 @@ function runMxG28(run, contract) {
       }
     }
   }
+
   const specs = {
+    backend: loadColumnSpec(run.root, contract.domain, 'backend'),
     design: loadColumnSpec(run.root, contract.domain, 'design'),
     frontend: loadColumnSpec(run.root, contract.domain, 'frontend'),
   }
-  const labels = { design: '设计 spec', frontend: '前端 spec' }
+  const labels = { backend: '后端 spec', design: '设计 spec', frontend: '前端 spec' }
+
+  // 任务状态机模式：契约表用中文展示名，后端存 8 个存储态与 11 条迁移，
+  // 前端只暴露 4 个展示态与投影后的 5 条迁移。两边分别比对，不要求同名。
+  if (!uiObject && zhStates.size > 0) {
+    const storageStates = new Set([...zhStates].map((state) => CONTRACT_STATE_MAP[state].storage))
+    const displayStates = new Set([...zhStates].map((state) => CONTRACT_STATE_MAP[state].display))
+    const storageTransitions = new Set()
+    const displayTransitions = new Set()
+    for (const pair of zhTransitions) {
+      const [from, to] = pair.split('->')
+      const fromMap = CONTRACT_STATE_MAP[from]
+      const toMap = CONTRACT_STATE_MAP[to]
+      storageTransitions.add(`${fromMap.storage}->${toMap.storage}`)
+      if (fromMap.display !== toMap.display) displayTransitions.add(`${fromMap.display}->${toMap.display}`)
+    }
+    for (const target of ['backend', 'frontend']) {
+      const expectedStates = target === 'backend' ? storageStates : displayStates
+      const expectedTransitions = target === 'backend' ? storageTransitions : displayTransitions
+      const spec = specs[target]
+      if (!spec) {
+        record(check, run, {
+          rule: 'MX-G-28',
+          severity: 'warning',
+          path: contract.rel,
+          line: 1,
+          item: '状态值一致',
+          expected: `存在 ${labels[target]} 列文件`,
+          actual: '列文件缺失，状态比对跳过',
+          hint: '补列文件，或在变更包首部写 N/A：<列名>：<理由>',
+          message: `${labels[target]}文件缺失`,
+        })
+        continue
+      }
+      const parsed = extractSpecStates(spec.text)
+      const declaredStates = parsed.tableStates
+      const missing = [...expectedStates].filter((state) => !declaredStates.has(state))
+      const extra = [...declaredStates].filter((state) => !expectedStates.has(state))
+      if (declaredStates.size === 0) {
+        problems += 1
+        record(check, run, {
+          rule: 'MX-G-28',
+          severity: 'error',
+          path: spec.rel,
+          line: 1,
+          item: '状态值一致',
+          expected: `${labels[target]}声明状态表并覆盖 ${expectedStates.size} 个状态`,
+          actual: '状态表为空',
+          hint: `在 ${spec.rel} 补状态表；状态只能从状态表登记，不能由迁移表反推`,
+          message: `${labels[target]}状态表为空`,
+        })
+      } else if (missing.length > 0) {
+        problems += 1
+        record(check, run, {
+          rule: 'MX-G-28',
+          severity: 'error',
+          path: spec.rel,
+          line: 1,
+          item: '状态值一致',
+          expected: `${labels[target]}覆盖 ${missing.join('、')}`,
+          actual: '状态表缺这些状态',
+          hint: `以契约表中文状态映射为准，在 ${spec.rel} 补状态`,
+          message: `${labels[target]}缺状态 ${missing.join('、')}`,
+        })
+      }
+      if (extra.length > 0) {
+        const label = NA_LABELS[`states:${target}`] ?? ''
+        const suppression = naSuppression(spec.text, label)
+        if (suppression) {
+          if (!suppression.suppressed) recordNaReasonError(check, run, 'MX-G-28', spec, label, suppression.declaration)
+        } else {
+          record(check, run, {
+            rule: 'MX-G-28',
+            severity: 'warning',
+            path: spec.rel,
+            line: 1,
+            item: '状态值一致',
+            expected: 'spec 状态都能回指契约表',
+            actual: `多出状态 ${extra.join('、')}`,
+            hint: '把状态补进契约表，或从 spec 删除',
+            message: `${labels[target]}多出状态 ${extra.join('、')}`,
+          })
+        }
+      }
+      const missingTransitions = [...expectedTransitions].filter((pair) => !parsed.transitions.has(pair))
+      if (expectedTransitions.size > 0 && (!parsed.hasTransitionTable || parsed.transitions.size === 0)) {
+        problems += 1
+        record(check, run, {
+          rule: 'MX-G-28',
+          severity: 'error',
+          path: spec.rel,
+          line: 1,
+          item: '状态迁移',
+          expected: `${labels[target]}声明迁移表并覆盖 ${expectedTransitions.size} 条迁移`,
+          actual: '迁移表为空',
+          hint: `在 ${spec.rel} 补迁移表；迁移不能省略，空表按缺迁移处理`,
+          message: `${labels[target]}迁移表为空`,
+        })
+      } else if (missingTransitions.length > 0) {
+        problems += 1
+        record(check, run, {
+          rule: 'MX-G-28',
+          severity: 'error',
+          path: spec.rel,
+          line: 1,
+          item: '状态迁移',
+          expected: `含迁移 ${missingTransitions.join('、')}`,
+          actual: '转移表缺这些迁移',
+          hint: '补迁移行，或从契约表删除未实现的迁移',
+          message: `${labels[target]}缺迁移 ${missingTransitions.join('、')}`,
+        })
+      }
+    }
+    const design = specs.design
+    if (design) {
+      const suppression = naSuppression(design.text, NA_LABELS['states:design'])
+      if (!suppression) {
+        record(check, run, {
+          rule: 'MX-G-28',
+          severity: 'warning',
+          path: design.rel,
+          line: 1,
+          item: '状态值一致',
+          expected: '设计 spec 登记任务状态映射或写具体 N/A',
+          actual: '未找到任务状态矩阵与 N/A 声明',
+          hint: '补任务状态展示映射，或写 N/A：设计状态：<具体理由>',
+          message: '设计 spec 未声明任务状态维度',
+        })
+      } else if (!suppression.suppressed) {
+        recordNaReasonError(check, run, 'MX-G-28', design, NA_LABELS['states:design'], suppression.declaration)
+      }
+    }
+    return finishCheck(check, run, problems === 0 ? '状态一致' : `${problems} 处状态或迁移缺失`)
+  }
+
   for (const target of ['design', 'frontend']) {
     const spec = specs[target]
     if (!spec) {
@@ -1990,6 +2310,160 @@ Owner：测试
 `)
 }
 
+function gapContractFixture(options = {}) {
+  const frontendType = options.frontendType ?? 'string'
+  const typeCell = options.missingCell ? '' : frontendType
+  return `# 契约表 · CONV
+
+状态：冻结
+版本：v1.0
+冻结日期：2026-11-24
+owner：设计
+变更单号：无
+
+## 类 1 数据形状
+
+| 编号 | 概念 | 实体或端点 | 字段路径 | 类型 | 可空 | 默认值 | 枚举取值或边界 | 来源 |
+|---|---|---|---|---|---|---|---|---|
+| CT-CONV-001 | 任务投影 | GET /api/tasks 的 task | \`taskId\` | string | 否 | 无 | 1–64 字 | 后端 spec §2 |
+| CT-CONV-002 | 任务投影 | GET /api/tasks 的 task | \`displayStatus\` | string | 否 | 无 | pending、running、done、failed | 后端 spec §2 |
+| CT-CONV-003 | 任务卡 props | 前端 TaskCard 的 props | \`taskId\` | ${typeCell} | 否 | 无 | 1–64 字 | 前端 spec props |
+
+## 类 2 状态机
+
+| 编号 | 对象 | 状态取值全集 | 从状态 | 到状态 | 触发者 | 条件与副作用 | 非法迁移错误码 |
+|---|---|---|---|---|---|---|---|
+| CT-CONV-011 | 任务 | 未开始、排队、进行中、已完成、失败、已取消、已中断、阻塞 | 未开始 | 排队 | 用户 | 创建后进入队列 | 无 |
+| CT-CONV-012 | 任务 | 同上 | 未开始 | 已取消 | 用户 | 排队前取消 | \`task_state_conflict\` |
+| CT-CONV-013 | 任务 | 同上 | 排队 | 进行中 | 执行器 | 取到执行槽 | \`task_state_conflict\` |
+| CT-CONV-014 | 任务 | 同上 | 排队 | 已取消 | 用户 | 执行前取消 | \`task_state_conflict\` |
+| CT-CONV-015 | 任务 | 同上 | 进行中 | 进行中 | 执行器 | 追加轨迹 | 无 |
+| CT-CONV-016 | 任务 | 同上 | 进行中 | 已完成 | 执行器 | 全部步骤完成 | 无 |
+| CT-CONV-017 | 任务 | 同上 | 进行中 | 失败 | 执行器 | 步骤失败 | 无 |
+| CT-CONV-018 | 任务 | 同上 | 进行中 | 已取消 | 用户 | 运行中取消 | 无 |
+| CT-CONV-019 | 任务 | 同上 | 失败 | 排队 | 用户 | 显式重试 | \`task_state_conflict\` |
+| CT-CONV-020 | 任务 | 同上 | 已取消 | 排队 | 用户 | 显式重试 | \`task_state_conflict\` |
+| CT-CONV-022 | 任务 | 同上 | 已中断 | 排队 | 系统 | 重启后恢复 | 无 |
+
+## 类 3 错误码
+
+| 编号 | 码值 | HTTP | 触发条件 | 响应附加字段 | 是否泄露存在性 | 客户端动作 |
+|---|---|---|---|---|---|---|
+| CT-CONV-021 | \`conflict\` | 409 | 任务被占用时点击 | 无 | 否 | 提示并刷新 |
+
+## 类 4 事件与消息
+
+| 编号 | 事件名 | 触发时机 | 载荷字段 | 顺序依据 | 去重键 | 补偿方式 |
+|---|---|---|---|---|---|---|
+| CT-CONV-031 | \`task.trace\` | 追加轨迹 | \`id\`、\`stepId\` | 日志 id 递增 | \`id\` | 重拉最近 200 条 |
+
+## 类 5 界面几何与选择器
+
+| 编号 | 元素 | 选择器或 aria | 属性 | 数值 | 单位 | 断点 | 容差 | token |
+|---|---|---|---|---|---|---|---|---|
+| CT-CONV-041 | 任务卡 | \`[data-task-id]\` | width | 320 | px | 全档 | ±1 | --sp-2 |
+
+## 类 6 验收入口
+
+| 编号 | AC 编号 | 判据摘要 | 脚本路径 | 夹具名 | 证据路径 | 判定人 |
+|---|---|---|---|---|---|---|
+| CT-CONV-051 | \`AC-CONV-001-01\` | 点击后显示 1 个详情 | \`scripts/ac/AC-CONV-001-01.mjs\` | task-card | \`.tmp/ac/AC-CONV-001-01.json\` | 自动 |
+`
+}
+
+function writeContractGapSpecs(root, options = {}) {
+  writeContractFixtureSpecs(root, { naReasons: 'full' })
+  const backendTransitions = [
+    ['pending', 'queued'], ['pending', 'cancelled'], ['queued', 'running'], ['queued', 'cancelled'],
+    ['running', 'running'], ['running', 'done'], ['running', 'failed'], ['running', 'cancelled'],
+    ['failed', 'queued'], ['cancelled', 'queued'], ['interrupted', 'queued'],
+  ].filter(([from, to]) => !(options.dropBackendTransition && from === 'failed' && to === 'queued'))
+  const backendRows = backendTransitions.map(([from, to]) => `| \`${from}\` | \`${to}\` | 执行器 |`).join('\n')
+  writeFixture(root, 'specs/backend/P1-CONV/task-api.md', `# 后端 spec · 任务接口
+
+## 1 响应字段
+
+| 字段 | 类型 |
+|---|---|
+| \`taskId\` | string |
+| \`displayStatus\` | string |
+
+## 2 状态集合
+
+| 存储 \`status\` | \`displayStatus\` | 含义 |
+|---|---|---|
+| \`pending\` | \`pending\` | 未开始 |
+| \`queued\` | \`pending\` | 排队 |
+| \`running\` | \`running\` | 进行中 |
+| \`done\` | \`done\` | 已完成 |
+| \`failed\` | \`failed\` | 失败 |
+| \`cancelled\` | \`failed\` | 已取消 |
+| \`interrupted\` | \`failed\` | 已中断 |
+| \`blocked\` | \`pending\` | 阻塞 |
+
+## 3 合法迁移
+
+| 从 | 到 | 触发者 |
+|---|---|---|
+${backendRows}
+
+## 4 错误码
+
+| 错误码 | HTTP |
+|---|---|
+| \`conflict\` | 409 |
+`)
+  const frontendStates = [
+    ['pending', '尚未开始或等待'],
+    ['running', '正在执行'],
+    ['done', '全部完成'],
+    ['failed', '失败或取消'],
+  ].filter(([state]) => !(options.dropFrontendState && state === 'done'))
+    .filter(() => !options.emptyFrontendState)
+  const frontendStateRows = frontendStates.map(([state, meaning]) => `| \`${state}\` | ${meaning} |`).join('\n')
+  const frontendTransitions = [
+    ['pending', 'running'], ['pending', 'failed'], ['running', 'done'],
+    ['running', 'failed'], ['failed', 'pending'],
+  ]
+    .filter(([from, to]) => !(options.dropFrontendTransition && from === 'pending' && to === 'failed'))
+    .filter(([from, to]) => !(options.dropFrontendState && (from === 'done' || to === 'done')))
+    .filter(() => !options.emptyFrontendTransition)
+    .map(([from, to]) => `| \`${from}\` | \`${to}\` | 同步事件 |`)
+    .join('\n')
+  const frontendFieldRow = options.dropFrontendField ? '' : '| `taskId` | string | 无 |\n'
+  writeFixture(root, 'specs/frontend/P1-CONV/task-panel.md', `# 前端 spec · 任务面板
+
+## 1 组件 props
+
+| 名称 | 类型 | 默认值 |
+|---|---|---|
+${frontendFieldRow}
+## 2 任务展示态
+
+| 状态 | 含义 |
+|---|---|
+${frontendStateRows}
+
+## 3 展示态迁移
+
+| 从状态 | 到状态 | 触发 |
+|---|---|---|
+${frontendTransitions}
+
+## 4 DOM 锚点
+
+| 元素 | 选择器 |
+|---|---|
+| 任务卡 | \`[data-task-id]\` |
+
+## 5 错误态
+
+| 错误码 | HTTP |
+|---|---|
+| \`conflict\` | 409 |
+`)
+}
+
 function buildContractFixtures(base) {
   const pass = join(base, 'pass')
   writeFixture(pass, 'specs/contract/CONV/contract.md', contractFixture())
@@ -2011,6 +2485,22 @@ function buildContractFixtures(base) {
   const naEmpty = join(base, 'na-empty')
   writeFixture(naEmpty, 'specs/contract/CONV/contract.md', contractFixture({ frontendFields: false }))
   writeContractFixtureSpecs(naEmpty, { naReasons: 'empty', extraNaStates: true })
+  const gapCases = {
+    'gap-pass': {},
+    'gap-type': { frontendType: 'number' },
+    'gap-missing-field': { dropFrontendField: true },
+    'gap-missing-cell': { missingCell: true },
+    'gap-backend-migration': { dropBackendTransition: true },
+    'gap-frontend-state': { dropFrontendState: true },
+    'gap-frontend-migration': { dropFrontendTransition: true },
+    'gap-frontend-empty-state': { emptyFrontendState: true },
+    'gap-frontend-empty-migration': { emptyFrontendTransition: true },
+  }
+  for (const [name, options] of Object.entries(gapCases)) {
+    const root = join(base, name)
+    writeFixture(root, 'specs/contract/CONV/contract.md', gapContractFixture(options))
+    writeContractGapSpecs(root, options)
+  }
 }
 
 function signature(run) {
@@ -2099,6 +2589,87 @@ function runSelfTest(options = {}) {
     line(
       emptyRun.findings.some((finding) => /建立域契约表/.test(finding.hint)),
       '缺契约表 期望 输出建表提示 实际 有提示',
+    )
+
+    const gapPassRun = runContract(join(base, 'gap-pass'), { domain: null })
+    const gapPassErrors = gapPassRun.findings.filter((finding) => finding.severity === 'error').length
+    line(gapPassErrors === 0, `中文状态与前端字段样例 error 数 期望 0 实际 ${gapPassErrors}`)
+    const gapStateErrors = gapPassRun.findings.filter(
+      (finding) => finding.rule === 'MX-G-28' && finding.severity === 'error',
+    )
+    line(gapStateErrors.length === 0, `中文任务状态映射命中 MX-G-28 error 数 期望 0 实际 ${gapStateErrors.length}`)
+    const gapFieldErrors = gapPassRun.findings.filter(
+      (finding) => finding.rule === 'MX-G-27' && finding.severity === 'error',
+    )
+    line(gapFieldErrors.length === 0, `前端字段与类型一致样例 MX-G-27 error 数 期望 0 实际 ${gapFieldErrors.length}`)
+
+    const gapTypeRun = runContract(join(base, 'gap-type'), { domain: null })
+    const gapType = gapTypeRun.findings.filter(
+      (finding) => finding.rule === 'MX-G-27' && /类型不一致/.test(finding.message),
+    )
+    line(
+      gapType.length === 1 &&
+        /契约 number/.test(gapType[0].message) &&
+        /声明 string/.test(gapType[0].message) &&
+        /contract\.md:\d+/.test(gapType[0].message) &&
+        /task-panel\.md:\d+/.test(gapType[0].message),
+      `前端字段类型不一致样例 期望 1 条并带两侧类型与行号 实际 ${gapType.length}`,
+    )
+
+    const gapMissingFieldRun = runContract(join(base, 'gap-missing-field'), { domain: null })
+    line(
+      gapMissingFieldRun.findings.some(
+        (finding) => finding.rule === 'MX-G-27' && /前端 spec缺字段/.test(finding.message),
+      ),
+      '前端字段缺失样例 期望 报前端 spec缺字段 实际 已报',
+    )
+
+    const gapCellRun = runContract(join(base, 'gap-missing-cell'), { domain: null })
+    line(
+      gapCellRun.findings.some(
+        (finding) => finding.rule === 'MX-G-26' && /缺「类型」/.test(finding.message),
+      ),
+      '契约表缺格样例 期望 报缺「类型」 实际 已报',
+    )
+
+    const gapBackendRun = runContract(join(base, 'gap-backend-migration'), { domain: null })
+    line(
+      gapBackendRun.findings.some(
+        (finding) => finding.rule === 'MX-G-28' && /后端 spec缺迁移/.test(finding.message),
+      ),
+      '后端迁移缺失样例 期望 报后端 spec缺迁移 实际 已报',
+    )
+
+    const gapFrontendStateRun = runContract(join(base, 'gap-frontend-state'), { domain: null })
+    line(
+      gapFrontendStateRun.findings.some(
+        (finding) => finding.rule === 'MX-G-28' && /前端 spec缺状态/.test(finding.message),
+      ),
+      '前端展示态缺失样例 期望 报前端 spec缺状态 实际 已报',
+    )
+
+    const gapFrontendTransitionRun = runContract(join(base, 'gap-frontend-migration'), { domain: null })
+    line(
+      gapFrontendTransitionRun.findings.some(
+        (finding) => finding.rule === 'MX-G-28' && /前端 spec缺迁移/.test(finding.message),
+      ),
+      '前端展示态迁移缺失样例 期望 报前端 spec缺迁移 实际 已报',
+    )
+
+    const gapEmptyStateRun = runContract(join(base, 'gap-frontend-empty-state'), { domain: null })
+    line(
+      gapEmptyStateRun.findings.some(
+        (finding) => finding.rule === 'MX-G-28' && /前端 spec状态表为空/.test(finding.message),
+      ),
+      '前端空状态表样例 期望 报前端 spec状态表为空 实际 已报',
+    )
+
+    const gapEmptyTransitionRun = runContract(join(base, 'gap-frontend-empty-migration'), { domain: null })
+    line(
+      gapEmptyTransitionRun.findings.some(
+        (finding) => finding.rule === 'MX-G-28' && /前端 spec迁移表为空/.test(finding.message),
+      ),
+      '前端空迁移表样例 期望 报前端 spec迁移表为空 实际 已报',
     )
 
     const json = toJson(passRun)

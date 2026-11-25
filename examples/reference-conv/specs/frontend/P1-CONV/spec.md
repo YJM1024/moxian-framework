@@ -33,9 +33,7 @@
 
 排除项：`PRD-SYNC-005`（远程访问与通知中心）已于 2026-11-22 移除，编号不复用，本文件不写前端契约。
 
-各节「接口」表首列登记的是 `sendChat`、`connectEvents` 这类接口操作名（调用侧函数名与端点动作用名），不是 props 或字段名。类 1 字段比对只认 §1.2 与各节 props 表，接口表不参与，故声明不适用：
-
-N/A：前端字段：各节接口调用表首列是 sendChat、connectEvents 等接口操作名，不是 props 或字段，字段比对只认 props 表，本表不参与 MX-G-27 字段一致性检查。
+各节「接口调用」表首列登记的是 `sendChat`、`connectEvents` 这类接口操作名，不是 props 或字段名；MX-G-27 只按表头识别字段列，不读首列操作名。组件 props、发送入参与消息字段统一登记在 §1.8，契约表类 1 的前端行与本节同名同类型。
 
 ### 1.2 组件边界（样式与复用规则）
 
@@ -87,9 +85,30 @@ N/A：前端字段：各节接口调用表首列是 sendChat、connectEvents 等
 
 `draft → ready → in-progress → implemented → verified → accepted`（`docs/plan/MASTER-PLAN.md` §1.2）。本文件自身状态 `draft`；每个功能点的"前端契约状态"只允许四值：**契约完整 / 缺实现 / 与实现不一致 / N/A**。
 
-§1.1 索引表「产品 spec 状态」「前端契约状态」两列登记的是实现进度（`implemented`、`partial` 等），各节散文与代码片段里的箭头写法描述交互过程；整篇扫描切出的 23 个碎片词（含 `rror`、`ode`、`vent` 这类被截断的残片）都来自这两类文本，都不是类 2 任务状态机的状态取值，故声明不适用：
+§1.1 索引表「产品 spec 状态」「前端契约状态」两列登记实现进度（`implemented`、`partial` 等），不进入状态机解析。前端与契约类 2 对应的只有一个维度，即任务展示态，四个取值与五条迁移登记在 §17.9.4；结构化状态表存在时 MX-G-28 不扫描散文箭头，因此不会再把 `rror`、`ode`、`vent` 这类切词残片当状态。
 
-N/A：前端状态：§1.1 索引表的实现度列值与各节散文、代码片段中的箭头写法只描述实现进度与交互过程，不是类 2 任务状态机状态，不参与契约状态比对。
+### 1.8 props 与消息字段
+
+本表登记前端对外契约里真实存在的字段，契约表类 1 的 CT-CONV-042 至 CT-CONV-055 与本表逐行同名同类型。归属列写明字段属于哪类结构；`Message` 的字段与 §17.6.1 的判定字段一致，跨标签同步消息的字段与 §12 的事件载荷一致。
+
+| 字段 | 类型 | 归属 | 说明 |
+|---|---|---|---|
+| `disabled` | bool | `Composer` props | 发送中或会话只读时为 `true`（`app.tsx:687-688`） |
+| `streaming` | bool | `Composer` props | 流式增量进行中为 `true` |
+| `sendError` | string | `Composer` props | 发送失败文案；空串表示无错误 |
+| `sessionId` | string | `sendChat` 入参 | 目标会话 id |
+| `text` | string | `sendChat` 入参 | 用户输入正文，发送前 trim |
+| `clientMutationId` | string | `sendChat` 入参 | 一次发送一个，重试复用 |
+| `role` | string | `Message` 结构 | `user`、`agent`、`system` |
+| `category` | string | `Message` 结构 | 任务卡片消息为 `task` |
+| `taskId` | string | `Message` 结构 | 任务卡片消息指向的任务 id |
+| `batchId` | string | `Message` 结构 | 批量创建时写入的批次 id |
+| `taskCount` | number | `Message` 结构 | 批次消息的任务数，1–12 |
+| `tabId` | string | 跨标签同步消息 | 发送方标签 id |
+| `opId` | string | 跨标签同步消息 | 一次操作一个，接收方按它去重 |
+| `at` | number | 跨标签同步消息 | 发送时间毫秒时间戳 |
+
+各组件另有本地 UI 态（`editing`、`menuId`、`values`、`expanded` 等），只在组件内使用，不经 props 下传，也不进契约表。
 
 ---
 
@@ -1400,6 +1419,25 @@ N1 属于任务创建链路，本轮前端不直接调用，只消费 `task.crea
 | `task_context_too_large` | 413 | 提示目标、输入或约束超限，要求删减 |
 | `permission_denied` | 403 | 展示为工具调用失败，不重试 |
 | `task_executor_unavailable` | 503 | 禁用发起入口并提示稍后重试 |
+
+### 17.9.4 任务展示态与迁移
+
+前端只展示四个任务态，不展示八个存储态；映射关系由后端 `displayStatus` 给出，契约表类 2 的中文展示名按此表落到前端四态（契约表 112 至 123 行）。`pending` 汇总未开始、排队与阻塞，`failed` 汇总失败、已取消与已中断，因此筛选条的四片与展示态一一对应（§17.5.1）。
+
+| 状态 | 含义 | 契约中文名 |
+|---|---|---|
+| `pending` | 尚未开始或等待依赖、确认、资源 | 未开始、排队、阻塞 |
+| `running` | 正在执行 | 进行中 |
+| `done` | 全部步骤完成 | 已完成 |
+| `failed` | 执行失败、被取消或被中断 | 失败、已取消、已中断 |
+
+| 从状态 | 到状态 | 触发 |
+|---|---|---|
+| `pending` | `running` | 首个任务开始执行 |
+| `pending` | `failed` | 启动前失败或被取消 |
+| `running` | `done` | 全部步骤完成 |
+| `running` | `failed` | 执行失败、取消或中断 |
+| `failed` | `pending` | 用户显式重试 |
 
 ### 17.10 可访问性
 

@@ -1,8 +1,8 @@
 # 墨线 SDD 框架
 
-版本：v1.7.1
+版本：v1.7.2
 
-状态：active，2026-11-25 起作为门禁依据；v1.2 于 2026-11-24 按第四批验收必修项完成修订，并经复验通过冻结；v1.3 于同日按三份复测报告的残余缺口统一兼容门与抽样口径，修订根因记录位置与数据 owner 指派，回写附录 B 责任人与表 10-2 的引用；v1.4 于 2026-11-24 按第二阶段压测第一组补契约表十一类、合规处置与验收判据，新增 19 条规则；v1.5 于 2026-11-25 按冻结评审补原因码七值、安全评审人 MX-R-39、数据迁移四种处置、发布与插件门禁、运行手册六项、60 秒观测窗口、命令层与文档校验、证据登记表两列与契约表落地，规则总数 276 条，本轮增补 8 条后为 284 条；v1.6 于 2026-11-25 把版本与统计口径统一到 284 条规则、41 个角色（v1.6 时点）与 68 条门禁规则，修正四处口径不一致：MX-R-40 与 MX-9-31、表 B-3 统一为六项观测字段，插件市场审核门补三条人员分离，复核与验收分工统一为复核人出结论、验收签最终判定，`templates/audit-events.md` 按三角色改写示例并升 v1.1；`scripts/measure-perf.mjs` 性能脚本落地，25 任务覆盖率复判 175/175；v1.7 于 2026-11-25 作为 v1.6 的修订版发布，补 MX-R-42 术语别名后角色规则由 41 条增至 42 条，`docs/framework/` 与 `docs/process/` 的 36 个文件统一使用正式名「验收」与「产品」，`RUNBOOK.md` 定性为 superseded，规则总数仍为 284 条、门禁规则仍为 68 条；验收报告见 `accept/ACCEPT-MOXIAN-V17-20261125.md`；条文修订按 MX-1-14 登记。v1.7.1 于 2026-11-25 作为维护版发布，只补 `GATES.md` 第 3.4.1 节的 N/A 声明规则并同步版本行，规则总数 284 条、角色规则 42 条、门禁规则 68 条均不变；验收报告见 `accept/ACCEPT-MOXIAN-V171-20261125.md`，验收人 `mx-accept-v171`，验收日期 2026-11-25，结论 pass，签字见报告第 7 节。
+状态：active，2026-11-25 起作为门禁依据；v1.2 于 2026-11-24 按第四批验收必修项完成修订，并经复验通过冻结；v1.3 于同日按三份复测报告的残余缺口统一兼容门与抽样口径，修订根因记录位置与数据 owner 指派，回写附录 B 责任人与表 10-2 的引用；v1.4 于 2026-11-24 按第二阶段压测第一组补契约表十一类、合规处置与验收判据，新增 19 条规则；v1.5 于 2026-11-25 按冻结评审补原因码七值、安全评审人 MX-R-39、数据迁移四种处置、发布与插件门禁、运行手册六项、60 秒观测窗口、命令层与文档校验、证据登记表两列与契约表落地，规则总数 276 条，本轮增补 8 条后为 284 条；v1.6 于 2026-11-25 把版本与统计口径统一到 284 条规则、41 个角色（v1.6 时点）与 68 条门禁规则，修正四处口径不一致：MX-R-40 与 MX-9-31、表 B-3 统一为六项观测字段，插件市场审核门补三条人员分离，复核与验收分工统一为复核人出结论、验收签最终判定，`templates/audit-events.md` 按三角色改写示例并升 v1.1；`scripts/measure-perf.mjs` 性能脚本落地，25 任务覆盖率复判 175/175；v1.7 于 2026-11-25 作为 v1.6 的修订版发布，补 MX-R-42 术语别名后角色规则由 41 条增至 42 条，`docs/framework/` 与 `docs/process/` 的 36 个文件统一使用正式名「验收」与「产品」，`RUNBOOK.md` 定性为 superseded，规则总数仍为 284 条、门禁规则仍为 68 条；验收报告见 `accept/ACCEPT-MOXIAN-V17-20261125.md`；条文修订按 MX-1-14 登记。v1.7.1 于 2026-11-25 作为维护版发布，只补 `GATES.md` 第 3.4.1 节的 N/A 声明规则并同步版本行，规则总数 284 条、角色规则 42 条、门禁规则 68 条均不变；验收报告见 `accept/ACCEPT-MOXIAN-V171-20261125.md`，验收人 `mx-accept-v171`，验收日期 2026-11-25，结论 pass，签字见报告第 7 节。v1.7.2 于 2026-11-25 作为补登版发布，在附录 A 表 A-1 补登 `component-spec` 模板，矩阵模板引用 102/102、提示归零、自检 26 条；契约门补字段类型一致性、契约表缺格、任务状态机中文状态映射与前端维度契约行四项检查，语言门补 R2 无量纲豁免、R5 缩写已定义视为引用与 R7 判据映射行不计重复定义三类误报规则，`check-spec-language` 阈值提示归零；规则总数 284 条、角色规则 42 条、门禁规则 68 条均不变。验收报告见 `accept/ACCEPT-MOXIAN-V172-20261125.md`，验收人 `mx-accept-v172`，验收日期 2026-11-25，结论 pass，签字见报告第 7 节。
 
 位置：`docs/framework/MOXIAN.md`
 
@@ -1237,6 +1237,7 @@ scope 允许: <文件或目录>
 | sharding-plan | 分片与路由方案 | 8、12 | `docs/framework/templates/sharding-plan.md` | 现行（本版新登记） | 分片键、路由函数、跨片事务与重分片核对 |
 | gray-release | 灰度发布记录 | 6、11 | `docs/framework/templates/gray-release.md` | 现行（本版新登记） | 分桶键、档位、观察窗口、回滚阈值与判定人 |
 | external-dependency | 外部依赖登记 | 6、9 | `docs/framework/templates/external-dependency.md` | 现行（本版新登记） | 配额、限流、熔断半开、降级与注入验证 |
+| component-spec | 组件 spec 模板 | 6、9、10 | `docs/framework/templates/component-spec.md` | 现行（v1.7.2 补登） | 六类必填项、八态矩阵、token 引用、无障碍、验收判据 |
 
 待建模板共五份，为 `delta.md`、`priority.md`、`component-state-matrix.md`、`component-test.md` 与 `docs/testing/flaky.md`。本轮按压测 25×7 第 4 节新建十二份模板，其中 `adr`、`visual-baseline`、`drill-report`、`security-matrix`、`slo`、`audit-events` 六份由本册待建改为现行，另六份 `repro`、`offline-sync`、`dependency-upgrade`、`sharding-plan`、`gray-release`、`external-dependency` 为新登记，十二份全部建于 `docs/framework/templates/`，待建份数由十一改为五。第三批补登的七条中，`runbook`、`defect-record`、`cli-release-checklist`、`token-change`、`cli-contract` 五份为新登记，`migration-plan` 由待建改为现行，`perf-baseline` 为运行登记文件。本轮补登的六份模板是 `a11y-checklist`、`tenant-isolation-checklist`、`permission-policy-matrix`、`localization-checklist`、`compliance-disposal-record` 与 `release-signing-checklist`，六份均已建于 `docs/framework/templates/`。沿用模板的字段变更只在第 11 章回写补丁里改，不直接改文件。附录 A 至附录 C 的维护人尚未指定，登记为 U-02，维护人确定前由本册作者代管索引。
 
@@ -1374,6 +1375,7 @@ scope 允许: <文件或目录>
 | v1.6 | 2026-11-25 | 版本行、附录 A、B、D 与 `ROLES.md`、`GATES.md`、`TASK-MATRIX.md`、`README.md`、`EFFORT.md`、四份域规范、`templates/audit-events.md` 的相关条款；规则总数 284 条，本轮不新增或删除规则 | 版本收口：统一为 284 条规则、41 个角色（v1.6 时点）、21 道门禁 68 条；本轮成果并入本版登记，含 MX-G-64 至 MX-G-70 七条门禁、十二份模板、MX-6-30 至 MX-6-32 三条契约、MX-9-30 至 MX-9-34 五条证据形式、MX-R-40 与 MX-R-41 两个角色、契约表 v1.4、证据索引十三选一、MX-9-24 性能脚本落地与 25 任务覆盖率复判 175/175；四处口径一致性修正：MX-R-40 六项观测字段、插件市场审核三条人员分离、复核与验收分工、audit-events 示例与判定；验收报告见 `accept/ACCEPT-MOXIAN-V16-20261125.md` | U-14 保留 | mx-align-16 | active |
 | v1.7 | 2026-11-25 | 版本行、附录 D 与 `ROLES.md`、`GATES.md`、`TASK-MATRIX.md`、`EFFORT.md`、`ADOPTION.md`、`README.md` 的相关条款；规则总数 284 条，角色规则 42 条，门禁规则 68 条 | v1.6 修订版：`ROLES.md` 补 MX-R-42 术语别名，角色规则由 41 条增至 42 条；`docs/framework/` 与 `docs/process/` 的 36 个文件把「验收 Agent」「验收者」统一为「验收」、把「变更发起人」「变更提出方」统一为「产品」，absorb 与历史验收报告按原文保留；`MOXIAN.md` 表 5-3 推进人改「产品」；`GATES.md` 第 8 行增「与历史文档的关系」声明；`RUNBOOK.md` 标 superseded，`docs/README.md` 状态列同步；新增 `scripts/measure-net.mjs` 与弱网五档脚本口径；新建 `specs/changes/CHG-MOXIAN-V16/` 与 `specs/test/FRAMEWORK/test-plan.md`，9 个既有变更包补结构；三个门禁脚本补自检计数；验收报告见 `accept/ACCEPT-MOXIAN-V17-20261125.md` | U-14 保留 | mx-v17-freeze | active |
 | v1.7.1 | 2026-11-25 | 版本行、附录 D 与 `GATES.md`、`TASK-MATRIX.md`、`ROLES.md`、`EFFORT.md`、`ADOPTION.md`、`README.md`、四份域规范的相关条款；规则总数 284 条，角色规则 42 条，门禁规则 68 条 | 维护版：`GATES.md` 第 3.4.1 节新增 `N/A：<类别>：<理由>` 声明规则，登记前端字段、设计状态、前端状态三类，覆盖 MX-G-27 与 MX-G-28 的提示级判定，error 不受影响；四处门禁脚本修订只同步判定实现与自检计数，正文规则除该声明外未变；验收报告见 `accept/ACCEPT-MOXIAN-V171-20261125.md` | U-14 保留 | mx-v171-bump | active |
+| v1.7.2 | 2026-11-25 | 版本行、状态行、附录 A 表 A-1 与附录 D 表 D-2、D.7；`GATES.md` 第 3.4、3.4.1、4 节；`TASK-MATRIX.md`、`ROLES.md`、`EFFORT.md`、`ADOPTION.md`、`README.md` 与四份域规范的版本行；同批 `TASK-MATRIX.md` 第 3 节两格的契约动作指向 `templates/component-spec.md`，`scripts/check-matrix-coverage.mjs` 模板名册登记该模板；规则总数 284 条，角色规则 42 条，门禁规则 68 条均不变 | 补登 component-spec 模板，矩阵模板引用 102/102、提示归零、自检 26 条；契约门补字段类型一致性、契约表缺格、中文状态映射与前端维度契约行四项检查，语言门补三类误报规则，`check-spec-language` 阈值提示归零 | U-14 保留 | v172-bump | active |
 
 ### D.3 冲突裁决落实
 
@@ -1479,6 +1481,8 @@ v1.4 新增章级规则 19 条，其中第 5 章 3 条、第 6 章 8 条、第 9
 
 v1.7.1 为维护版，只改版本行与 `GATES.md` 第 3.4.1 节的 N/A 声明规则，十三章正文、284 条章级规则、42 条角色规则与 68 条门禁规则均未变；四处门禁脚本修订按脚本自检与本轮验收报告登记，不改变本册的规则编号与判据。
 
+v1.7.2 为补登版，在附录 A 表 A-1 补登 `component-spec` 模板，矩阵模板引用 102/102、提示归零、自检 26 条；契约门补字段类型一致性、契约表缺格、任务状态机中文状态映射与前端维度契约行四项检查，其中字段列识别与类型归一在第 554 至 626 行、类型不一致判定在第 1318 行（error 记录在 1321 至 1331 行，第 1330 行为消息模板）、缺格扫描在第 983 至 1073 行、中文状态映射与比对在第 89 至 98 行与第 1337 至 1540 行（任务状态机分支，设计分支在 1521 至 1539 行，分支返回在 1540 行）；语言门补 R2 无量纲豁免、R5 缩写已定义视为引用与 R7 判据映射行不计重复定义三类误报规则，`check-spec-language` 阈值提示由 59 条归零。十三章正文、284 条章级规则、42 条角色规则与 68 条门禁规则均未变，六脚本自检分别为 15、29、26、11、17 与 14 条，合计 112 条。
+
 ### D.8 验收证据与冻结记录
 
 版本行按一行一版登记在 D.2，本节只登记各版的复验结论与冻结依据，不重复版本行。
@@ -1491,5 +1495,6 @@ v1.7.1 为维护版，只改版本行与 `GATES.md` 第 3.4.1 节的 N/A 声明�
 | 2026-11-25 | v1.6 | `accept/ACCEPT-MOXIAN-V16-20261125.md`，七节 | 已签字，验收人 `mx-accept-v16c`，验收日期 2026-11-25，结论 pass，签字见报告第 7 节；`check-matrix-coverage` 与 `check-contract` 实跑 PASS，六脚本自检合计 73 项 PASS，`measure-perf.mjs` 自检 34 项 PASS | 已知欠账 6 条（KD-01 至 KD-06），均不阻断冻结，见报告第 5 节 | mx-align-16 |
 | 2026-11-25 | v1.7 | `accept/ACCEPT-MOXIAN-V17-20261125.md`，七节 | 已签字，验收人 `mx-accept-v17`，验收日期 2026-11-25，结论 pass，签字见报告第 6 节；`check-trace`、`check-matrix-coverage`、`check-contract` 与 `check-gates` 实跑 PASS，`check-gates` error 0；`measure-net.mjs` 自检 33 项 PASS，`check-evidence` 14 项 PASS 13、WARN 1、error 0 | 已知遗留 4 条，KD-05 已由 `repo-sync-v17` 同步并推送（`dd12e9a`）关闭，详见报告第 4、5 节 | mx-v17-freeze |
 | 2026-11-25 | v1.7.1 | `accept/ACCEPT-MOXIAN-V171-20261125.md`，七节 | 已签字，验收人 `mx-accept-v171`，验收日期 2026-11-25，结论 pass；`check-gates` 120 passed、0 failed、warning 0，`check-contract` 7 passed、0 failed、warning 0，`check-matrix-coverage` 66/66、warning 2，`check-spec-language` error 0、warning 59，`check-trace` 684 项，四脚本自检合计 65 项，退出码均为 0 | 矩阵 2 条与 spec 语言 59 条提示按既有口径保留；维护版覆盖范围见报告第 6 节 | mx-v171-bump |
+| 2026-11-25 | v1.7.2 | `accept/ACCEPT-MOXIAN-V172-20261125.md`，七节 | 已签字，验收人 `mx-accept-v172`，验收日期 2026-11-25，结论 pass，原因码不适用（pass 不写原因码）；前两轮判 partial 的空表静默跳过与行号偏移已消解；`check-gates` 120 passed、0 failed、warning 0，`check-contract` 7 passed、0 failed、warning 0，`check-matrix-coverage` 66/66、warning 0，`check-spec-language` error 0、warning 0，`check-trace` 684 项，六脚本自检合计 112 条，五项主命令退出码 0 | 证据门 `check-evidence` 仍红：1497 error、8 warn，为存量缺口，已登记，见报告第 5.2 节；`MX-G-52` 数值比对 0 处，见第 5.1 节 | v172-close |
 
 本记录是 v1.2 的验收证据，报告全文见 `accept/ACCEPT-BATCH4-R2.md`。报告第六节的 7 条遗留不改变规则编号、门禁行为与验收判据，回写安排在 v1.3；第一条要求把附录 A 与 D.7 的 50 条 MX-G 规则改为 52 条，其余六条按报告列出的责任人与要求执行。冻结后本册只按 MX-1-14 与第 12 章修订，历史记录不就地改写。

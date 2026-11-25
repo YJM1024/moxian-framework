@@ -11,9 +11,9 @@
  *           MX-BE、MX-PD、MX-QA、MX-R、MX-G 等前缀，只查 MOXIAN.md
  *           会把有效引用误判为缺失，因此按主册加伴随册解析并分别计数；
  *   模板名：解析到 docs/templates/
- *           下的真实文件；ADR 与复现记录已有独立模板 adr.md 与 repro.md，
- *           组件 spec 仍无独立模板文件，按 MX-6-03 的定义核对并记
- *           warning，不阻断；
+ *           下的真实文件；ADR、复现记录与组件 spec 均有独立模板文件
+ *           （adr.md、repro.md、component-spec.md），名册内文件缺失或
+ *           模板名不在名册内时记 error；
  *   门禁名：在 docs/GATES.md 的节标题或矩阵第 2 节门禁名册中
  *           存在；人工（<条件>）只在不适用阶段按人工判据计，记 warning。
  *
@@ -89,27 +89,18 @@ const TEMPLATE_FILES = new Map([
   ['token-change', 'docs/templates/token-change.md'],
   ['cli-contract', 'docs/templates/cli-contract.md'],
   ['change.md', 'docs/templates/change.md'],
+  ['组件 spec', 'docs/templates/component-spec.md'],
   ['ADR', 'docs/templates/adr.md'],
   ['repro', 'docs/templates/repro.md'],
 ])
 
 /**
- * 产物类型没有独立模板文件，按定义条款与落点核对。
+ * 产物类型没有独立模板文件时，按定义条款与落点核对。
  * rule 必须在规则名册中存在，definitionPath 必须存在，canonicalFile 写了的
  * 必须存在；canonicalPath 只用于提示，不要求当前仓库已有实例。
- * ADR 与复现记录已登记独立模板文件，走 TEMPLATE_FILES，不在此表。
+ * ADR、复现记录与组件 spec 均已登记独立模板文件，走 TEMPLATE_FILES，不在此表。
  */
-const ARTIFACT_TEMPLATES = new Map([
-  [
-    '组件 spec',
-    {
-      rule: 'MX-6-03',
-      definitionPath: MOXIAN_REL,
-      canonicalPath: 'specs/COMP-<name>/spec.md',
-      canonicalFile: null,
-    },
-  ],
-])
+const ARTIFACT_TEMPLATES = new Map([])
 
 const FALLBACK_GATES = [
   '判级门',
@@ -164,14 +155,14 @@ function usage() {
      共 18 格。
   2. 每格检查动作、模板、门禁三个字段非空。
   3. 格内规则号在 MOXIAN.md 或伴随规则册中存在；模板名解析到模板文件，
-     组件 spec 按框架内产物定义核对；门禁名在 GATES.md
+     组件 spec 解析到 templates/component-spec.md；门禁名在 GATES.md
      或矩阵第 2 节门禁名册中存在。
   4. 输出主矩阵、附加类型与合计三组覆盖率，字段齐全数与缺失清单。
 
 覆盖率口径：动作、模板、门禁三字段齐全，且格内三类引用全部可解析的格，
 计为覆盖。主矩阵 48 格、附加类型 18 格、合计 66 格为固定分母。模板字段写
-“无”按显式声明计，不要求模板文件。产物类型没有独立模板文件时记 warning，
-不阻断覆盖率；人工（<条件>）只在不适用阶段按人工判据计，同样记 warning。
+“无”按显式声明计，不要求模板文件。名册内的模板文件缺失或模板名不在名册内
+时记 error，阻断覆盖率；人工（<条件>）只在不适用阶段按人工判据计，记 warning。
 
 退出码：
   0  66 格全部三字段齐全且引用有效
@@ -1355,6 +1346,14 @@ function selfTest() {
     )
     const legacyRun = run(passRoot, { templates: legacyRoster })
 
+    const missingComponentRoot = join(root, 'missing-component-template')
+    buildFixture(missingComponentRoot, 'pass', ['组件 spec'])
+    const missingComponentRun = run(missingComponentRoot)
+    const componentLegacyRoster = new Map(
+      [...TEMPLATE_FILES].filter(([alias]) => alias !== '组件 spec'),
+    )
+    const componentLegacyRun = run(passRoot, { templates: componentLegacyRoster })
+
     check(
       pass1.coverage.main.covered === 48 && pass1.coverage.main.total === 48,
       `通过样例主矩阵 48/48，实际 ${pass1.coverage.main.covered}/${pass1.coverage.main.total}`,
@@ -1369,8 +1368,8 @@ function selfTest() {
     )
     check(pass1.errors === 0 && pass1.exitCode === 0, `通过样例 error 0、退出码 0，实际 ${pass1.errors}/${pass1.exitCode}`)
     check(
-      pass1.warnings.length === 2,
-      `通过样例外产物与人工门禁 warning 2，实际 ${pass1.warnings.length}`,
+      pass1.warnings.length === 1 && pass1.warnings[0]?.kind === 'gate-manual',
+      `通过样例人工门禁 warning 1，实际 ${pass1.warnings.length}（${pass1.warnings.map((item) => item.kind).join('、') || '无'}）`,
     )
     check(
       TEMPLATE_FILES.get('ADR') === 'docs/templates/adr.md',
@@ -1379,6 +1378,14 @@ function selfTest() {
     check(
       TEMPLATE_FILES.get('repro') === 'docs/templates/repro.md',
       `模板名册 repro 指向 docs/templates/repro.md，实际 ${TEMPLATE_FILES.get('repro') ?? '缺失'}`,
+    )
+    check(
+      TEMPLATE_FILES.get('组件 spec') === 'docs/templates/component-spec.md',
+      `模板名册组件 spec 指向 docs/templates/component-spec.md，实际 ${TEMPLATE_FILES.get('组件 spec') ?? '缺失'}`,
+    )
+    check(
+      ARTIFACT_TEMPLATES.size === 0,
+      `产物类型名册已清空，实际 ${ARTIFACT_TEMPLATES.size} 项`,
     )
 
     check(
@@ -1418,12 +1425,28 @@ function selfTest() {
       `模板文件缺失样例命中 template-file-missing、退出码 1，实际 ${[...missingKinds].join('、') || '无'}、${missingRun.exitCode}`,
     )
 
+    const missingComponentKinds = new Set(
+      missingComponentRun.missing.flatMap((item) => item.reasons.map((reason) => reason.kind)),
+    )
+    check(
+      missingComponentKinds.has('template-file-missing') && missingComponentRun.exitCode === 1,
+      `组件 spec 模板文件缺失样例命中 template-file-missing、退出码 1，实际 ${[...missingComponentKinds].join('、') || '无'}、${missingComponentRun.exitCode}`,
+    )
+
     const legacyKinds = new Set(
       legacyRun.missing.flatMap((item) => item.reasons.map((reason) => reason.kind)),
     )
     check(
       legacyKinds.has('template-unknown') && legacyRun.errors === 2 && legacyRun.exitCode === 1,
       `旧名册样例命中 template-unknown 2 格、退出码 1，实际 ${legacyRun.errors}、${legacyRun.exitCode}`,
+    )
+
+    const componentLegacyKinds = new Set(
+      componentLegacyRun.missing.flatMap((item) => item.reasons.map((reason) => reason.kind)),
+    )
+    check(
+      componentLegacyKinds.has('template-unknown') && componentLegacyRun.errors === 1 && componentLegacyRun.exitCode === 1,
+      `组件 spec 未登记名册样例命中 template-unknown 1 格、退出码 1，实际 ${componentLegacyRun.errors}、${componentLegacyRun.exitCode}`,
     )
 
     const stable = (left, right) =>
