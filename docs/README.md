@@ -39,7 +39,7 @@
 
 ## 版本与维护规则
 
-总册当前版本为 **v1.7.1**，状态 **active**，2026-11-25 作为维护版在 v1.7 基础上补 `GATES.md` 第 3.4.1 节的 N/A 声明规则，角色规则 42 条，验收报告见 [`accept/ACCEPT-MOXIAN-V171-20261125.md`](accept/ACCEPT-MOXIAN-V171-20261125.md)，签字栏待独立验收填写。其余文件在首部写各自的版本与状态，引用时以首部为准。总册与附属文件的分工见总册第 1 章与附录 D，冲突处理按 D.4 的归属规则执行。
+总册当前版本为 **v1.7.1**，状态 **active**，2026-11-25 作为维护版在 v1.7 基础上补 `GATES.md` 第 3.4.1 节的 N/A 声明规则，角色规则 42 条，验收报告见 [`accept/ACCEPT-MOXIAN-V171-20261125.md`](accept/ACCEPT-MOXIAN-V171-20261125.md)，验收人 `mx-accept-v171`，验收日期 2026-11-25，结论 pass。其余文件在首部写各自的版本与状态，引用时以首部为准。总册与附属文件的分工见总册第 1 章与附录 D，冲突处理按 D.4 的归属规则执行。
 
 维护遵循单一事实来源。任务类型与门禁名册以 [`TASK-MATRIX.md`](TASK-MATRIX.md) 为准，角色职责以 [`ROLES.md`](ROLES.md) 为准，推理档位以 [`EFFORT.md`](EFFORT.md) 为准，契约表字段以总册第 6 章与 [`templates/contract-table.md`](templates/contract-table.md) 为准，其余条文以总册为准。同一事项只在一处定义，其他文件引用编号或路径。
 
