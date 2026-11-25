@@ -360,23 +360,31 @@ function runSelfTest() {
   const byRule = new Map()
   for (const item of badAll) byRule.set(item.rule, (byRule.get(item.rule) ?? 0) + 1)
 
-  let ok = true
+  const assertions = []
+  const assert = (name, ok, detail = '') => assertions.push({ name, ok: Boolean(ok), detail })
   for (const rule of Object.keys(RULES)) {
     const hits = byRule.get(rule) ?? 0
-    const passed = hits === 1
-    if (!passed) ok = false
-    console.log(`${passed ? 'PASS' : 'FAIL'} ${rule} 命中 ${hits} 次，期望 1 次`)
+    assert(`${rule} 命中次数`, hits === 1, `期望 1 实际 ${hits}`)
   }
   const cleanCount = clean.failures.length + clean.warnings.length
-  console.log(`${cleanCount === 0 ? 'PASS' : 'FAIL'} 干净样本命中 ${cleanCount} 次，期望 0 次`)
-  if (cleanCount !== 0) ok = false
+  assert('干净样本命中次数', cleanCount === 0, `期望 0 实际 ${cleanCount}`)
+
+  // 未归类命中是覆盖性守卫，不计入断言数；命中时直接判失败并在末行注明。
   const extra = badAll.length - Object.keys(RULES).length
-  if (extra !== 0) {
-    ok = false
-    console.log(`FAIL 未归类命中 ${extra} 次，期望 0 次`)
+  const failed = assertions.filter((entry) => !entry.ok)
+  for (const entry of assertions) {
+    console.log(`${entry.ok ? 'PASS' : 'FAIL'} ${entry.name}（${entry.detail}）`)
   }
-  console.log(ok ? 'SELF-TEST PASS' : 'SELF-TEST FAILED')
-  return ok ? 0 : 1
+  if (extra !== 0) {
+    console.log(`FAIL 未归类命中（期望 0 实际 ${extra}）`)
+  }
+  if (failed.length > 0 || extra !== 0) {
+    const suffix = extra !== 0 ? `, ${extra} unclassified hits` : ''
+    console.log(`SELF-TEST FAILED (${failed.length}/${assertions.length} assertions failed${suffix})`)
+    return 1
+  }
+  console.log(`SELF-TEST PASS (${assertions.length} assertions)`)
+  return 0
 }
 
 function parseArgs(argv) {

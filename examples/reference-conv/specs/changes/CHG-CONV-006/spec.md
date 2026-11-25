@@ -5,6 +5,7 @@ Implements: PRD-CONV-001、PRD-CONV-002、PRD-CONV-003、PRD-CONV-004、PRD-CONV
 Covers: `AC-CONV-001-01`、`AC-CONV-001-02`、`AC-CONV-001-03`、`AC-CONV-001-04`、`AC-CONV-001-05`、`AC-CONV-002-01`、`AC-CONV-002-02`、`AC-CONV-003-01`、`AC-CONV-003-02`、`AC-CONV-003-03`、`AC-CONV-004-01`、`AC-CONV-004-02`、`AC-CONV-004-03`、`AC-CONV-005-01`、`AC-CONV-005-02`、`AC-CONV-006-01`、`AC-CONV-006-02`、`AC-CONV-007-01`、`AC-CONV-007-02`、`AC-CONV-008-01`、`AC-CONV-008-02`、`AC-CONV-008-03`、`AC-CONV-008-04`、`AC-CONV-008-05`、`AC-SYNC-001-01`、`AC-SYNC-001-02`、`AC-SYNC-002-01`、`AC-SYNC-002-02`、`AC-SYNC-003-01`、`AC-SYNC-003-02`、`AC-SYNC-004-01`、`AC-SYNC-004-02`、`AC-SYNC-004-03`
 Domains: `CONV`、`SYNC`
 Change: CHG-CONV-006
+变更类型：纯文档（补 Covers、判据映射、缺失节与任务表列；不改已冻结的 AC 文本、验收判据与业务代码）
 Owner：产品（AC 口径与覆盖映射）/ 前端（`frontend/src/app.tsx`、`frontend/src/components/library.tsx`）/ 后端（`backend/internal/modules/sessions`、`backend/internal/modules/chat`）/ 测试与验收（[`../../test/P1-CONV/test-plan.md`](../../test/P1-CONV/test-plan.md)、[`docs/testing/ACCEPT-CONV-9-20261122.md`](../../../docs/testing/ACCEPT-CONV-9-20261122.md)）
 
 > 关联：产品 spec [`../../product/P1-CONV/spec.md`](../../product/P1-CONV/spec.md)；功能树 [`../../../docs/product/TREE.md`](../../../docs/product/TREE.md)；追溯矩阵 [`../../../docs/product/TRACEABILITY.md`](../../../docs/product/TRACEABILITY.md)；
@@ -159,6 +160,48 @@ Owner：产品（AC 口径与覆盖映射）/ 前端（`frontend/src/app.tsx`、
 
 证据锚点：`frontend/src/components/library.tsx:698`（`nearestTickIndex`）、`:743`、`:749`（轨道事件用 `clientY`）；`frontend/src/components/components.css:1069-1076`（整列命中与刻度穿透）；`frontend/src/components/TimelineGroups.test.tsx:88`（八个偏移点）、`:112`（中点取上一条）、`:133`（越界取首末）；`frontend/src/components/ExecRowHitArea.test.tsx:120`、`:172`（44px 轨道与 20×4 穿透刻度）。
 
+### 4.1 判据映射（33 条 AC）
+
+下表把 `Covers:` 的 33 条 AC 逐条落到可判定判据。脚本存在不代表本轮已执行：本节只补映射与入口，执行结果以域级 `specs/test/P1-CONV/test-plan.md` 与 `docs/testing/ACCEPT-CONV-9-20261122.md` 为准。
+
+| AC | 判据 |
+|---|---|
+| `AC-CONV-001-01` | `scripts/ac/AC-CONV-001-01.mjs` |
+| `AC-CONV-001-02` | `scripts/ac/AC-CONV-001-02.mjs` |
+| `AC-CONV-001-03` | `scripts/ac/AC-CONV-001-03.mjs` |
+| `AC-CONV-001-04` | `scripts/ac/AC-CONV-001-04.mjs` |
+| `AC-CONV-001-05` | `scripts/ac/AC-CONV-001-05.mjs` |
+| `AC-CONV-002-01` | `scripts/ac/AC-CONV-002-01.mjs` |
+| `AC-CONV-002-02` | `scripts/ac/AC-CONV-002-02.mjs` |
+| `AC-CONV-003-01` | `scripts/ac/AC-CONV-003-01.mjs` |
+| `AC-CONV-003-02` | `scripts/ac/AC-CONV-003-02.mjs` |
+| `AC-CONV-003-03` | `scripts/ac/AC-CONV-003-03.mjs` |
+| `AC-CONV-004-01` | 人工：验收 Agent 复核 `frontend/src/components/MessageItem.test.tsx` 的 18 条用例与 E2E 01a，记录截图与命令输出 |
+| `AC-CONV-004-02` | `scripts/ac/AC-CONV-004-02.mjs` |
+| `AC-CONV-004-03` | `scripts/ac/AC-CONV-004-03.mjs` |
+| `AC-CONV-005-01` | `scripts/ac/AC-CONV-005-01.mjs` |
+| `AC-CONV-005-02` | `scripts/ac/AC-CONV-005-02.mjs` |
+| `AC-CONV-006-01` | `scripts/ac/AC-CONV-006-01.mjs` |
+| `AC-CONV-006-02` | `scripts/ac/AC-CONV-006-02.mjs`（组合键与 `isComposing` 分支；真实中文 IME 保持 conditional，人工验证前不计 pass） |
+| `AC-CONV-007-01` | `scripts/ac/AC-CONV-007-01.mjs` |
+| `AC-CONV-007-02` | `scripts/ac/AC-CONV-007-02.mjs` |
+| `AC-CONV-008-01` | `scripts/ac/AC-CONV-008-01.mjs` |
+| `AC-CONV-008-02` | `scripts/ac/AC-CONV-008-02.mjs` |
+| `AC-CONV-008-03` | `scripts/ac/AC-CONV-008-03.mjs` |
+| `AC-CONV-008-04` | `scripts/ac/AC-CONV-008-04.mjs` |
+| `AC-CONV-008-05` | `scripts/ac/AC-CONV-008-05.mjs` |
+| `AC-SYNC-001-01` | `scripts/ac/AC-SYNC-001-01.mjs` |
+| `AC-SYNC-001-02` | `scripts/ac/AC-SYNC-001-02.mjs` |
+| `AC-SYNC-002-01` | `scripts/ac/AC-SYNC-002-01.mjs` |
+| `AC-SYNC-002-02` | `scripts/ac/AC-SYNC-002-02.mjs` |
+| `AC-SYNC-003-01` | `scripts/ac/AC-SYNC-003-01.mjs` |
+| `AC-SYNC-003-02` | `scripts/ac/AC-SYNC-003-02.mjs` |
+| `AC-SYNC-004-01` | `scripts/ac/AC-SYNC-004-01.mjs` |
+| `AC-SYNC-004-02` | `scripts/ac/AC-SYNC-004-02.mjs` |
+| `AC-SYNC-004-03` | `scripts/ac/AC-SYNC-004-03.mjs` |
+
+其中 `AC-CONV-006-02` 保持 conditional（真实中文输入法未人工验收），`AC-CONV-004-01` 无独立脚本，按人工判据执行。
+
 ## 5. 未覆盖 / 明确不做
 
 | 项 | 结论 | 依据 |
@@ -192,8 +235,43 @@ Owner：产品（AC 口径与覆盖映射）/ 前端（`frontend/src/app.tsx`、
 
 回滚只需移走本文件，按仓库规则移入 `E:\dsh_home\trash\pending-delete\` 保留原路径结构，不就地删除。
 
-## 8. 待对齐事项（不在本文件修改范围）
+## 8. 待确认事项（不在本文件修改范围）
 
 1. 产品 spec 仍有 8 处“状态写 covered、说明未闭环”的表述（`specs/product/P1-CONV/spec.md:103`、`:218`、`:239-250`、`:281`、`:303`、`:310-312`），与第九轮验收结论并存。
 2. 域级 test-plan 的 `AC-SYNC-001-02` 锚点写在 `frontend/src/App.conversation.test.tsx:259`，实际重连断言在 `:486`，`:259` 是未读合并刷新。
 3. 本包缺 `test-plan.md` 与 `evidence.md`，`check-sdd` 若扩展到变更包会报 R1；当前只影响六类产物的完整性表述，不影响 `check-trace`。
+
+## 9. 需求
+
+1. 12 个 PRD 各有一个变更归属，`PRD-CONV-008` 在追溯中不再悬空。
+2. 33 条生效 AC 全部进入 `Covers:`，并按 §4.1 逐条给出脚本或人工判据。
+3. 本包承诺的行为写成 11 条可判定的变更级 AC，每条给出代码、测试或验收报告锚点。
+4. 未做、不能做与待人工项在 §5 显式登记，不以包内全绿替代域级结论。
+5. 任务卡补齐卡号、依赖、评审人与禁止项，使每张卡可派发、可复核。
+
+## 10. 状态与错误边界
+
+| 场景 | 期望行为 | 判据 |
+|---|---|---|
+| 归档、恢复、改名、置顶请求失败 | 页面级错误条可见，菜单关闭，列表不进入目标态，可重试 | `AC-CHG-CONV-006-01` |
+| 同一 `clientMutationId` 重试或并发重试 | 只落一条消息，并发第二路命中“进行中”冲突，不重复落库 | `AC-CHG-CONV-006-02` |
+| 主会话归档 | 后端返回 409 `main_session_protected`，前端不渲染操作菜单 | `AC-CHG-CONV-006-03` |
+| `draft=true` 建会话 | 不落库，刷新或重启后消失；首条消息后物化为正式会话 | `AC-CHG-CONV-006-04` |
+| 投影 `taskLimit` 非法或会话不存在 | 分别返回 400 `invalid_task_limit` 与 404；条件请求命中返回 304 | `AC-CHG-CONV-006-10` |
+| 右栏任务组补取失败 | 保留已取内容并给出可重试入口，重试成功后计数与可见条数一致 | `AC-CHG-CONV-006-08` |
+
+真实中文输入法（`AC-CONV-006-02`）与真实厂商中断当前不可验证，按 §5 记为待人工与显式不做，不写成通过。
+
+## 11. 接口与数据
+
+| 接口或数据 | 形状 | 说明 |
+|---|---|---|
+| `GET /api/sessions`、`GET /api/sessions/tree` | 会话行含 `id`、`title`、`archived`、`pinned`、`hasUnread`、`messageCount` | 列表与树同口径，行内计数取该会话自身消息数，底部汇总取全局 |
+| `GET /api/sessions/{id}/spec-projection` | `ETag` + `Cache-Control: no-cache`；`taskLimit` 取值 0–50 | 同摘要条件请求返回 304 且 body 为空；任务或交付物变化、`taskLimit` 不同都会改变 ETag |
+| `POST /api/sessions/{id}/archive`、`/unarchive`、`PATCH` 改名、置顶 | 归档主会话返回 409 `main_session_protected` | 归档会话置顶返回冲突；重复置顶幂等 |
+| 提交消息 | 请求带可选 `clientMutationId`，响应复用首次结果 | 幂等记录重启后仍生效；不带 id 的旧客户端保持原行为 |
+| 停止流 | WebSocket `stop` 帧带 `messageId` | 只终止对应流，停止后同流 delta 不再渲染 |
+| 草稿 | `draft=true` 不写库 | 物化后走正式会话读写路径 |
+| 读游标（未读） | 会话级 `hasUnread`，标记已读幂等 | 重启后保留；只影响被标记的会话 |
+
+本文件不改接口与数据，上表只是把既有契约登记到变更层，形状以代码与域级 spec 为准。

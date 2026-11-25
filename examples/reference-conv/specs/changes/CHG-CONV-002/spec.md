@@ -2,6 +2,9 @@
 
 状态：**partial**（2026-11-21；实现与测试较硬，六类产物刚补齐，组件契约为未签收态）
 Implements: PRD-CONV-004、PRD-CONV-007
+Covers: `AC-CONV-004-01`、`AC-CONV-004-02`、`AC-CONV-007-01`、`AC-CONV-007-02`
+Change: CHG-CONV-002
+变更类型：纯文档（只补契约、任务卡与证据登记，不改实现与产品 AC 文本）
 Domains: `CONV`
 Owner：产品（AC 口径）/ 前端（MessageItem、Timeline、App 集成）/ 后端（chat 消息流、all_messages、cards）
 design.md：N/A：无新方案；本包把既有渲染/加载契约写成可验收描述。
@@ -54,6 +57,13 @@ design.md：N/A：无新方案；本包把既有渲染/加载契约写成可验�
 | `AC-CONV-007-01` | App.integration 祖先 4 用例；`M81*`；E2E 04a–04d | 有证据 | 真实后端 + 生产部署未验证（"已签未部署"） |
 | `AC-CONV-007-02` | 413/无重试、403/空祖先、重复 id 去重、切会话清链 | 部分 | 时间轴点击目标尺寸（≥44px）有 coarse 指针实测 44×44（`docs/testing/20261121-123009-after-metrics.json`），细指针无断言；长祖先链深度上限（16）未在 UI 断言 |
 
+### 4.1 判据映射
+
+- `AC-CONV-004-01` → 人工：验收 Agent 复核 MessageItem 18/18 用例、E2E 01a 与 `TestChatPersistsAndFiltersBySession`，无独立脚本。
+- `AC-CONV-004-02` → `scripts/ac/AC-CONV-004-02.mjs`，脚本存在，本轮未运行，结果记 `evidence.md`。
+- `AC-CONV-007-01` → `scripts/ac/AC-CONV-007-01.mjs`，脚本存在，本轮未运行，结果记 `evidence.md`。
+- `AC-CONV-007-02` → `scripts/ac/AC-CONV-007-02.mjs`，脚本存在，本轮未运行；时间轴目标尺寸与 16 层上限仍记 `missing`。
+
 ## 5. 文档漂移（重要）
 
 - 2026-11-21 起：`COMP-message-colors` / `COMP-timeline-groups` / `COMP-timeline-tip` 契约**已按现状契约化**（见 `specs/COMP-*/spec.md`），此前"未实现/白卡旧模型"的表述已作废；契约与实现不再漂移。
@@ -85,3 +95,23 @@ design.md：N/A：无新方案；本包把既有渲染/加载契约写成可验�
 ## 9. 回滚
 
 纯文档新增与链接追加；删除本目录 + 撤销 TREE/TRACE 链接即回到基线。
+
+## 10. 状态与错误边界
+
+- 消息流空态、加载中、403 权限拒绝分别渲染，不得空白；413 触发截断重试，403 视为空链并记 visited（`AC-CONV-007-02`）。
+- 流式失败显示 failed 徽标并可重试；只读会话中卡片按钮与复制入口按禁用处理。
+- 内部消息（`internal=1`）不得进入 UI 流，也不得经 API 返回前端。
+- 细指针下时间轴点击目标 44×44 无断言，长祖先链 16 层上限的 UI 行为未定义，两项都记 `missing`。
+
+## 11. 接口与数据
+
+- `GET /api/sessions/{id}/messages`（分页，前端 `limit=100`）、`GET /api/sessions/{id}/messages/all`（祖先链整级加载，带 413/403 语义）。
+- `POST /api/cards/{id}/actions/{actionId}`（卡片动作）；消息编辑接口已禁用。
+- 数据：消息 `category`/`internal`/`seq` 字段；祖先链按会话层级返回，前端合并去重后按时间排序。
+
+## 12. 待确认
+
+- 长祖先链深度上限（16 层）取截断提示还是分页，产品未定，当前无 UI 断言。
+- 时间轴点击目标 44×44 是否对细指针设备强制，需产品确认；粗指针实测见 `docs/testing/20261121-123009-after-metrics.json`。
+- 三个组件 spec 的签收状态回写由设计 + 验收 Agent 完成，尚未独立签字。
+

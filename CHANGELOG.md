@@ -1,6 +1,12 @@
 # 变更记录
 
-本文件汇总墨线框架从 v1.0 到 v1.6 的版本演进。条目取自源仓 `docs/framework/README.md` 的版本说明与 `docs/framework/MOXIAN.md` 附录 D 表 D-2，日期沿用原记录，均为 2026 年。
+本文件汇总墨线框架从 v1.0 到 v1.7 的版本演进。条目取自源仓 `docs/framework/README.md` 的版本说明与 `docs/framework/MOXIAN.md` 附录 D 表 D-2，日期沿用原记录，均为 2026 年。
+
+## v1.7（2026-11-25）
+
+v1.6 修订版。`ROLES.md` 补 MX-R-42 术语别名，「验收 Agent」「验收者」「acceptance agent」均指验收角色，流程文档只使用正式名「验收」，角色规则由 41 条增至 42 条；章级规则总数保持 284 条，门禁规则保持 68 条。`docs/framework/` 与 `docs/process/` 的 36 个文件完成术语统一，同时把「变更发起人」「变更提出方」统一为「产品」，absorb 目录与历史验收报告按原文保留。`MOXIAN.md` 表 5-3 的推进人改为「产品」；`GATES.md` 第 8 行增「与历史文档的关系」声明，明确 `docs/process/RUNBOOK.md` 的七个阶段与 `R-1` 至 `R-7` 是 v0.9 之前的旧划分，RUNBOOK 只作历史记录；`RUNBOOK.md` 标 superseded。新增弱网测量脚本 `scripts/measure-net.mjs`，自检 33 项；`docs/domains/testing.md` 第 5 节改为三档测量口径，`templates/offline-sync.md` 升 v1.1。三个门禁脚本补自检计数输出：`check-gates.mjs` 12 条、`check-spec-language.mjs` 8 条、`check-contract.mjs` 14 条。四个域规范升 v1.7。验收报告见 `accept/ACCEPT-MOXIAN-V17-20261125.md`。
+
+独立仓同步把 `docs/framework/` 的 69 个文件全量覆盖到 `docs/`，新增 v1.7 验收报告，并同步 7 个变更包 spec 的首部字段与两份历史验收报告的改动；四个门禁脚本按独立仓布局改写后更新，新增 `measure-net.mjs`。实跑结果为矩阵覆盖率 66/66（7 条提示）、契约门带 `--root examples/reference-conv` 7/7、`check-trace.mjs` 自检 11 条通过，其余脚本自检全部 PASS。
 
 ## v1.6（2026-11-25）
 

@@ -1932,10 +1932,10 @@ function runSelfTest(options = {}) {
   const passRoot = join(base, 'pass')
   const failRoot = join(base, 'fail')
   const emptyRoot = join(base, 'empty')
-  let ok = true
+  const assertions = []
   const line = (passed, text) => {
+    assertions.push({ passed, text })
     console.log(`${passed ? 'PASS' : 'FAIL'} ${text}`)
-    if (!passed) ok = false
   }
   try {
     buildContractFixtures(base)
@@ -1992,8 +1992,13 @@ function runSelfTest(options = {}) {
       }
     }
   }
-  console.log(ok ? 'SELF-TEST PASS' : 'SELF-TEST FAILED')
-  return ok ? 0 : 1
+  const failed = assertions.filter((entry) => !entry.passed)
+  if (failed.length > 0) {
+    console.log(`SELF-TEST FAILED (${failed.length}/${assertions.length} assertions failed)`)
+    return 1
+  }
+  console.log(`SELF-TEST PASS (${assertions.length} assertions)`)
+  return 0
 }
 
 /* ----------------------------- 入口 ----------------------------- */

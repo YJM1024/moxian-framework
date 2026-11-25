@@ -1,6 +1,6 @@
 # 离线与弱网同步设计模板（offline-sync）
 
-版本：v1.0，2026-11-25。状态：active。本模板服务 `MOXIAN.md` 第 6 章 MX-6-25、表 5-2「运行条件」与 `docs/framework/domains/testing.md` 第 5 节，落点 `docs/framework/templates/offline-sync.md`。契约表类 2 缓存状态列与类 4 合并规则列引用本表编号。
+版本：v1.1，2026-11-25。状态：active。本模板服务 `MOXIAN.md` 第 6 章 MX-6-25、表 5-2「运行条件」与 `docs/framework/domains/testing.md` 第 5 节，落点 `docs/framework/templates/offline-sync.md`。契约表类 2 缓存状态列与类 4 合并规则列引用本表编号。v1.1 于 2026-11-25 把第 3 节的测量命令改为 `scripts/measure-net.mjs` 脚本口径，字段表、五档网络与合并规则不变；本模板按自身版本序列计号，与框架主版本号分列。
 
 ## 1 用途与何时用
 
@@ -34,7 +34,7 @@
 | 合并规则 | 去重键 `(sessionId, seq)`；服务端优先；整条覆盖；按 `seq` 升序重放 |
 | 网络档位 | 4G：10 Mbps / 50 ms / 0.1%；3G：1.5 Mbps / 300 ms / 0.5%；2G：250 kbps / 800 ms / 2%；断网：0 |
 | 判定值 | 4G 首屏 ≤1s；3G ≤3s；2G 显示骨架不超 5s；断网可读缓存列表并在恢复后 10s 内同步 |
-| 测量命令 | `node scripts/measure-net.mjs --case offline-list --runs 3`（待建），人工按 DevTools Network 节流记录三档数据 |
+| 测量命令 | `node scripts/measure-net.mjs --mode latency --target 127.0.0.1:9000 --count 20 --threshold p95=<该档判定毫秒> --out docs/testing/measure-net-<TC 编号>-<档位>-latency-<YYYYMMDD-HHmm>.json`；丢包用 `--mode loss --count 50 --threshold loss=<该档上限>`，吞吐用 `--mode bandwidth --size 65536 --timeout 15000 --threshold mbps>=<约定值>`；9000 为注入代理监听端口示例，档位与判定值按 `testing.md` 5.2 节表取值，不再人工按 DevTools Network 节流记录 |
 
 ## 4 与条款、门禁的引用
 
@@ -47,3 +47,4 @@
 | 版本 | 日期 | 改动 | 依据 |
 |---|---|---|---|
 | v1.0 | 2026-11-25 | 首版：十二字段、五档网络、TTL 与合并规则 | 压测 25×7 第 4 节 S2-05 模板缺口 |
+| v1.1 | 2026-11-25 | 第 3 节测量命令改为 `scripts/measure-net.mjs` 脚本口径；字段表、五档网络与合并规则不变 | 验收报告 `accept/ACCEPT-MOXIAN-V17-20261125.md` 第 2 节第 7 项与第 10 项 |

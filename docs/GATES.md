@@ -1,9 +1,12 @@
 # 墨线门禁设计（GATES）
-状态：active v1.6，2026-11-25。本文件定义六道检查门禁、矩阵覆盖率门与十四道特有门禁中八道的检查规则、判定口径、输出格式与自证方式，脚本实现状态与人工判据见第 4 节。v0.3 于 2026-11-24 把第 3.7 节文档校验门的责任人改为引用 `ROLES.md` 第 15 节 MX-R-30，文档作者范围以该条为准。v0.4 于 2026-11-24 按第二阶段压测第二组缺口补 `MX-G-60` 至 `MX-G-63`，其中 `MX-G-60` 核验依赖类漏洞替代证据，`MX-G-61` 核验回滚可用性，`MX-G-62` 核验扫描类示例六项记录，`MX-G-63` 核验依赖升级契约四项。规则编号为 `MX-G-<两位序号>`，v1.6 之前现行规则共 61 条，编号范围为 `MX-G-01` 至 `MX-G-70`，其中 `MX-G-55` 与 `MX-G-56` 为第二批预留编号、尚未落条，其余编号按顺序连续、不复用。第 3.7 节另写文档校验门的检查规则，该门禁属十四道特有门禁之一，不改变六道检查门禁的计数。v1.5 于 2026-11-25 随框架冻结同步，MX-G-53 的数据语义处置扩为四种，安全评审门与发布交付、插件恶意样本复核挂接，规则条数与编号范围不变。v1.6 于 2026-11-25 按压测 25×7 第 4 节增补第 3.9 至 3.15 节七道专项门禁，新增 `MX-G-64` 至 `MX-G-70` 七条现行规则，现行规则合计 68 条，编号范围为 `MX-G-01` 至 `MX-G-70`。
+状态：active v1.7，2026-11-25。本文件定义六道检查门禁、矩阵覆盖率门与十四道特有门禁中八道的检查规则、判定口径、输出格式与自证方式，脚本实现状态与人工判据见第 4 节。v0.3 于 2026-11-24 把第 3.7 节文档校验门的责任人改为引用 `ROLES.md` 第 15 节 MX-R-30，文档作者范围以该条为准。v0.4 于 2026-11-24 按第二阶段压测第二组缺口补 `MX-G-60` 至 `MX-G-63`，其中 `MX-G-60` 核验依赖类漏洞替代证据，`MX-G-61` 核验回滚可用性，`MX-G-62` 核验扫描类示例六项记录，`MX-G-63` 核验依赖升级契约四项。规则编号为 `MX-G-<两位序号>`，v1.6 之前现行规则共 61 条，编号范围为 `MX-G-01` 至 `MX-G-70`，其中 `MX-G-55` 与 `MX-G-56` 为第二批预留编号、尚未落条，其余编号按顺序连续、不复用。第 3.7 节另写文档校验门的检查规则，该门禁属十四道特有门禁之一，不改变六道检查门禁的计数。v1.5 于 2026-11-25 随框架冻结同步，MX-G-53 的数据语义处置扩为四种，安全评审门与发布交付、插件恶意样本复核挂接，规则条数与编号范围不变。v1.6 于 2026-11-25 按压测 25×7 第 4 节增补第 3.9 至 3.15 节七道专项门禁，新增 `MX-G-64` 至 `MX-G-70` 七条现行规则，现行规则合计 68 条，编号范围为 `MX-G-01` 至 `MX-G-70`。v1.7 于 2026-11-25 作为 v1.6 修订版同步版本号，第 8 行已增补与历史文档的关系声明，明确 RUNBOOK 的七个阶段与 R-1 至 R-7 旧划分由本文件取代；现行 68 条规则与编号范围不变。
 
 六个门禁是检查动作，挂接到 `docs/framework/TASK-MATRIX.md` 第 2 节的阶段出口门禁上，不新增阶段，也不替换判级门、契约门、派单门、自验门、证据门与收口门。检查对象是 `specs/changes/<CHG-ID>/` 下的变更包、`specs/{product,design,frontend,backend,test}/` 下的五列 spec、`scripts/ac/` 下的断言脚本、`specs/test/<域>/fixtures/manifest.json` 下的夹具清单与 `docs/testing/` 下的证据索引。字段定义沿用 `docs/process/SPEC-STANDARD.md` 第 2 节与 `docs/process/templates/`，本文件只写检查方法与判定条件。
 
 统一输出采用一行一条的文本格式：`[GATE-<NAME>] <path>:<line> <MX-G-NN> <事实>；<修复动作>`。末行输出 `PASS (gate: <name>, checks: <n>, warnings: <m>)` 或 `FAILED: <e> error(s), <w> warning(s)`。`--json` 模式输出对象数组，每项含 `gate`、`rule`、`severity`、`path`、`line`、`ac`、`hint` 七个字段。退出码 0 表示通过，1 表示存在 error，2 表示参数或环境错误。`待补` 用退出码 2 表达，不用 0。
+
+与历史文档的关系。`docs/process/RUNBOOK.md` 的七个阶段与 `R-1` 至 `R-7` 是 v0.9 之前的旧划分，已被本文件的六道检查门禁、矩阵覆盖率门与十四道特有门禁取代；RUNBOOK 只作历史记录，门禁判定与执行以本文件为准，`R-1` 至 `R-7` 不再作为门禁编号引用。
+
 ## 1 分级与默认阻断
 门禁结果取 `通过`、`不通过`、`待补` 三值，三值的判定条件与后续动作固定下来，避免同一结果在不同人手里解释成不同状态。
 
@@ -77,7 +80,7 @@ FAILED: 2 error(s), 0 warning(s)
 
 失败时的提示文案格式：`[GATE-TRACE] <path>:<line> <MX-G-NN> <AC 编号> <缺失位置>；<补编号或补 N/A 理由>`。缺多个编号时合并为一行，编号用逗号分隔。
 
-责任人：产品负责 `Covers:` 与产品列，设计与前后端各自负责本列，测试负责两份 test-plan 与证据索引，验收 复核四处一致性。
+责任人：产品负责 `Covers:` 与产品列，设计与前后端各自负责本列，测试负责两份 test-plan 与证据索引，验收复核四处一致性。
 
 失败样例：取 `.tmp/gate-fixtures/trace/fail/`，变更包 `Covers:` 写 `AC-GATE-001-01`，产品列、前端列、后端列与五列测试列有该编号，设计列漏写，变更级 test-plan 漏写，`evidence.md` 只有一行「通过」，执行 `node scripts/check-gates.mjs --gate trace --root .tmp/gate-fixtures/trace/fail`。
 
@@ -165,7 +168,7 @@ FAILED: 5 error(s), 0 warning(s)
 
 失败时的提示文案格式：`[GATE-CONTRACT] <path>:<line> <MX-G-NN> <不一致事实>；<统一为哪一侧的哪个值>`。同一契约项的多处不一致合并为一行，位置用分号分隔。
 
-责任人：设计负责契约表与设计列，前端负责前端列，后端负责后端列与事件消息类契约项，测试负责测试列，验收 复核四方一致性与冻结状态。
+责任人：设计负责契约表与设计列，前端负责前端列，后端负责后端列与事件消息类契约项，测试负责测试列，验收复核四方一致性与冻结状态。
 
 失败样例：取 `.tmp/gate-fixtures/contract/fail/`，契约表一行位于第 12 行，写 `CT-PX-GATE-001`、`AC-GATE-001-01`、字段名与状态值已对齐、错误码 `409 conflict`、选择器 `.task-card:nth-child(2)`，契约项状态为 `冻结`；类 5 另写一行 `CT-PX-GATE-002`，元素 `任务卡`、属性 `width`、数值 `320`、单位 `px`、容差 `±1`；后端 spec 写 `409 task_locked`，前端错误态与后端一致；设计 spec 写 `[data-task-id]`，数值行写 `360px`；产品 spec 引用 `CT-PX-GATE-002` 处写 `360 px`，执行 `node scripts/check-gates.mjs --gate contract --root .tmp/gate-fixtures/contract/fail`。
 
@@ -195,7 +198,7 @@ FAILED: 3 error(s), 0 warning(s)
 
 失败时的提示文案格式：`[GATE-COVERAGE] <path>:<line> <MX-G-NN> <事实>；<补测试或登记豁免>`。覆盖率行补百分比与阈值。
 
-责任人：实现者补测试并留下覆盖率报告，测试 复核映射与豁免，Lead 批准豁免，验收 抽查改动文件与测试对应关系。
+责任人：实现者补测试并留下覆盖率报告，测试 复核映射与豁免，Lead 批准豁免，验收抽查改动文件与测试对应关系。
 
 失败样例：取 `.tmp/gate-fixtures/coverage/fail/`，在 `frontend/src/components/task-card.tsx` 增加 12 行，未新增 `task-card.test.tsx`，改动清单写入 `changed.txt`，执行 `node scripts/check-incremental-coverage.mjs --changed-files .tmp/gate-fixtures/coverage/fail/changed.txt`。
 
@@ -228,7 +231,7 @@ FAILED: 1 error(s), 0 warning(s)
 
 失败时的提示文案格式：`[GATE-EVIDENCE] <path>:<line> <MX-G-NN> <AC 或证据 ID> <缺失或过期事实>；<补证据、重跑或补原因码>`。一行只报一条证据的一个问题。
 
-责任人：测试 编制证据索引并回填状态，实现者提供断言输出与产物校验输出，验收 核验证据与签字，产品与设计提供人工判据记录。
+责任人：测试 编制证据索引并回填状态，实现者提供断言输出与产物校验输出，验收核验证据与签字，产品与设计提供人工判据记录。
 
 失败样例：取 `.tmp/gate-fixtures/evidence/fail/specs/changes/CHG-GATE-001/evidence.md`，变更包 `Covers:` 写 `AC-GATE-001-01`，在第 5 行写入一行 `| AC-GATE-001-01 | 通过 | 2026-11-01 |`，同包 test-plan 的 AC 行 `环境` 字段留空，另在 `specs/test/P1-FX/fixtures/manifest.json` 写一份夹具清单，生成器 mtime 晚于产物、`verifyCommand` 指向不存在的脚本、产物根字段 `generatorVersion` 与清单不一致，执行 `node scripts/check-gates.mjs --gate evidence --now 2026-11-24T12:00+08:00 --root .tmp/gate-fixtures/evidence/fail`。
 

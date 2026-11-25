@@ -1,6 +1,6 @@
 # 墨线档位映射（EFFORT）
 
-状态：active v1.6，2026-11-25，与 [`TASK-MATRIX.md`](TASK-MATRIX.md) v1.6 同步。
+状态：active v1.7，2026-11-25，与 [`TASK-MATRIX.md`](TASK-MATRIX.md) v1.7 同步。
 适用：本工作区全部派单，包含主会话拆分、子智能体执行与独立验收。
 定位：本文件把八类任务在六个阶段上的推理档位写成可查的表，派单时按格取值，不在现场临时判断。任务类型、阶段名与阶段取值以 TASK-MATRIX 为准，档位名称与派单参数以 [`adapters/deepseek.md`](adapters/deepseek.md) 第二节为准。
 
@@ -141,3 +141,4 @@
 | 2026-11-24 | v0.4 | 规则编号重排为文件内连续序号，DEC-19 例外改为 MX-E-04，其后各条顺延 | lead 追加要求 |
 | 2026-11-25 | v1.5 | 随框架冻结同步版本号；档位表内容不变，与 TASK-MATRIX v1.5 的引用保持一致 | `accept/ACCEPT-MOXIAN-V15-20261125.md` |
 | 2026-11-25 | v1.6 | 随框架版本收口同步版本号；档位表四十八格取值不变，引用对象改为 TASK-MATRIX v1.6 | 四方口径一致性核对与 v1.6 收口 |
+| 2026-11-25 | v1.7 | 随 v1.6 修订版同步版本号；四十八格档位取值不变，引用对象改为 TASK-MATRIX v1.7 | `ROLES.md` MX-R-42；`accept/ACCEPT-MOXIAN-V17-20261125.md` |
