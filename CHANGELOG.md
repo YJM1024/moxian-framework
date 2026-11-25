@@ -8,6 +8,8 @@ v1.6 修订版。`ROLES.md` 补 MX-R-42 术语别名，「验收 Agent」「验�
 
 独立仓同步把 `docs/framework/` 的 69 个文件全量覆盖到 `docs/`，新增 v1.7 验收报告，并同步 7 个变更包 spec 的首部字段与两份历史验收报告的改动；四个门禁脚本按独立仓布局改写后更新，新增 `measure-net.mjs`。实跑结果为矩阵覆盖率 66/66（7 条提示）、契约门带 `--root examples/reference-conv` 7/7、`check-trace.mjs` 自检 11 条通过，其余脚本自检全部 PASS。
 
+v1.7 于 2026-11-25 通过独立验收，验收人 `mx-accept-v17`，结论 pass，报告见 `accept/ACCEPT-MOXIAN-V17-20261125.md`。
+
 ## v1.6（2026-11-25）
 
 框架版本收口，规则总数保持 284 条，角色 41 条，门禁 21 道、68 条门禁规则，十三章与附录 A 至 D 的结构不变。四处口径统一：可观测性字段由五项补为六项，插件市场审核补审核人、申诉受理人与复核人三条人员分离，复核与验收分工统一为复核人出结论、验收签最终判定，审核事件模板升 v1.1 并按三角色改写示例。12 份专项模板随版登记，分别是 repro、adr、visual-baseline、offline-sync、dependency-upgrade、sharding-plan、gray-release、slo、drill-report、external-dependency、security-matrix 与 audit-events；新增性能测量脚本 `measure-perf.mjs`，自检 34 项。25 个任务乘七类口径的覆盖率复判达到 175/175，独立验收判 pass，签字见 `accept/ACCEPT-MOXIAN-V16-20261125.md`。

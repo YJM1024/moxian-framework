@@ -102,7 +102,7 @@ moxian-framework/
 
 ## 版本与许可
 
-`VERSION` 为 `v1.7`，对应 2026-11-25 的 v1.6 修订版，版本演进见 `CHANGELOG.md`；v1.7 验收报告见 `docs/accept/ACCEPT-MOXIAN-V17-20261125.md`，签字栏待独立验收填写。许可沿用源仓的 MIT 许可，见 `LICENSE`；如需更换许可方式，应先取得著作权人确认。
+`VERSION` 为 `v1.7`，对应 2026-11-25 的 v1.6 修订版，版本演进见 `CHANGELOG.md`；v1.7 验收报告见 `docs/accept/ACCEPT-MOXIAN-V17-20261125.md`，已于 2026-11-25 由 `mx-accept-v17` 独立验收通过，结论 pass。许可沿用源仓的 MIT 许可，见 `LICENSE`；如需更换许可方式，应先取得著作权人确认。
 
 ## 已知遗留
 
