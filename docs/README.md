@@ -16,9 +16,9 @@
 | [`TASK-MATRIX.md`](TASK-MATRIX.md) | 任务矩阵，八类任务在六个阶段的取值 | 判类型、判必做项与阶段出口 |
 | [`ROLES.md`](ROLES.md) | 角色职责，八个角色的边界与签字关系 | 派单与交接时确认责任人 |
 | [`EFFORT.md`](EFFORT.md) | 档位映射，八类任务各阶段的推理档位 | 填写派单卡的推理档位 |
-| [`GATES.md`](GATES.md) | 门禁设计，52 条 MX-G 规则与输出格式 | 核对门禁行为与脚本映射 |
+| [`GATES.md`](GATES.md) | 门禁设计，68 条 MX-G 规则与输出格式 | 核对门禁行为与脚本映射 |
 | [`domains/`](domains/) | 产品与设计、前端、后端、测试与验收四份域规范 | 各域的阶段步骤与判据写法 |
-| [`templates/`](templates/) | 任务卡、变更包、契约表、证据索引、评审记录五份模板 | 按模板建立变更包与证据 |
+| [`templates/`](templates/) | 任务卡、变更包、契约表、证据索引、评审记录与专项模板集 | 按模板建立变更包与证据 |
 | [`adapters/`](adapters/) | 适配层，当前环境为 DeepSeek Harness | 换模型或换工具时新增分支 |
 | [`absorb/`](absorb/) 与 [`ABSORB-RECONCILE.md`](ABSORB-RECONCILE.md) | 四份采纳清单与 98 条对账 | 核对采纳结果与不采纳项 |
 | [`accept/`](accept/) | 分批验收报告、走查与回放记录 | 查验收结论与遗留项 |
@@ -39,7 +39,7 @@
 
 ## 版本与维护规则
 
-总册当前版本为 **v1.5**，状态 **active**，2026-11-25 冻结，验收报告见 [`accept/ACCEPT-MOXIAN-V15-20261125.md`](accept/ACCEPT-MOXIAN-V15-20261125.md)，签字栏待独立验收填写。其余文件在首部写各自的版本与状态，引用时以首部为准。总册与附属文件的分工见总册第 1 章与附录 D，冲突处理按 D.4 的归属规则执行。
+总册当前版本为 **v1.6**，状态 **active**，2026-11-25 完成版本收口，验收报告见 [`accept/ACCEPT-MOXIAN-V16-20261125.md`](accept/ACCEPT-MOXIAN-V16-20261125.md)，签字栏待独立验收填写。其余文件在首部写各自的版本与状态，引用时以首部为准。总册与附属文件的分工见总册第 1 章与附录 D，冲突处理按 D.4 的归属规则执行。
 
 维护遵循单一事实来源。任务类型与门禁名册以 [`TASK-MATRIX.md`](TASK-MATRIX.md) 为准，角色职责以 [`ROLES.md`](ROLES.md) 为准，推理档位以 [`EFFORT.md`](EFFORT.md) 为准，契约表字段以总册第 6 章与 [`templates/contract-table.md`](templates/contract-table.md) 为准，其余条文以总册为准。同一事项只在一处定义，其他文件引用编号或路径。
 

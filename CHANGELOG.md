@@ -1,6 +1,12 @@
 # 变更记录
 
-本文件汇总墨线框架从 v1.0 到 v1.5 的版本演进。条目取自源仓 `docs/framework/README.md` 的版本说明与 `docs/framework/MOXIAN.md` 附录 D 表 D-2，日期沿用原记录，均为 2026 年。
+本文件汇总墨线框架从 v1.0 到 v1.6 的版本演进。条目取自源仓 `docs/framework/README.md` 的版本说明与 `docs/framework/MOXIAN.md` 附录 D 表 D-2，日期沿用原记录，均为 2026 年。
+
+## v1.6（2026-11-25）
+
+框架版本收口，规则总数保持 284 条，角色 41 条，门禁 21 道、68 条门禁规则，十三章与附录 A 至 D 的结构不变。四处口径统一：可观测性字段由五项补为六项，插件市场审核补审核人、申诉受理人与复核人三条人员分离，复核与验收分工统一为复核人出结论、验收签最终判定，审核事件模板升 v1.1 并按三角色改写示例。12 份专项模板随版登记，分别是 repro、adr、visual-baseline、offline-sync、dependency-upgrade、sharding-plan、gray-release、slo、drill-report、external-dependency、security-matrix 与 audit-events；新增性能测量脚本 `measure-perf.mjs`，自检 34 项。25 个任务乘七类口径的覆盖率复判达到 175/175，独立验收判 pass，签字见 `accept/ACCEPT-MOXIAN-V16-20261125.md`。
+
+独立仓同步把 `docs/framework/` 的 68 个文件全量覆盖到 `docs/`，新增 v1.6 验收报告、`STRESS-RERUN-25-20261125.md` 与 12 份模板；七个门禁脚本更新，其中五个按独立仓布局改写 `docs` 路径，并加入 `measure-perf.mjs`。实跑结果为矩阵覆盖率 66/66、门禁引用 96/96，契约门 7/7。
 
 ## 独立仓初始化（2026-11-25）
 

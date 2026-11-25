@@ -10,7 +10,7 @@
  *           （GATES.md、ROLES.md、domains/*.md）中出现；矩阵实际引用
  *           MX-BE、MX-PD、MX-QA、MX-R、MX-G 等前缀，只查 MOXIAN.md
  *           会把有效引用误判为缺失，因此按主册加伴随册解析并分别计数；
- *   模板名：解析到 docs/templates/ 或 docs/templates/
+ *   模板名：解析到 docs/templates/
  *           下的真实文件；组件 spec、ADR、复现记录三类产物在框架内没有
  *           独立模板文件，按各条定义核对并记 warning，不阻断；
  *   门禁名：在 docs/GATES.md 的节标题或矩阵第 2 节门禁名册中

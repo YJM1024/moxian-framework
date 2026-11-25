@@ -1,6 +1,6 @@
 # 墨线产品与设计域规范（product-design）
 
-状态：active v1.5，2026-11-25，随 v1.5 冻结；v0.3 于 2026-11-24 把 MX-PD-64 的令牌文件删除写作用域改为引用 `ROLES.md` 第 5 节 MX-R-31。v1.5 于 2026-11-25 随框架冻结同步，MX-PD-65 的截图档位统一为四档加 1280 条件档并引用 MX-9-11。
+状态：active v1.6，2026-11-25，随 v1.6 收口；v0.3 于 2026-11-24 把 MX-PD-64 的令牌文件删除写作用域改为引用 `ROLES.md` 第 5 节 MX-R-31。v1.5 于 2026-11-25 随框架冻结同步，MX-PD-65 的截图档位统一为四档加 1280 条件档并引用 MX-9-11；v1.6 于 2026-11-25 随框架版本收口同步版本号，规则正文不变。
 位置：`docs/framework/domains/product-design.md`。
 上位文件：总册 [`MOXIAN.md`](../MOXIAN.md) 规定章号与规则编号口径，[`TASK-MATRIX.md`](../TASK-MATRIX.md) 规定八类任务的必做项，[`SPEC-STANDARD.md`](../../process/SPEC-STANDARD.md) 规定 AC 与判据的写法。
 规则编号：`MX-PD-01` 至 `MX-PD-66`，本文内连续，新增规则在末号之后顺延，不跳号，不借用其他章号。
