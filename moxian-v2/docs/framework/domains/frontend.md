@@ -1,14 +1,14 @@
 # 前端域规则（MXV2-FE）
 
-版本：v2.0.0，日期 2026-11-27。状态：active。位置：`docs/framework/domains/frontend.md`。
+版本：v2.1.0，日期 2026-11-27。状态：active。位置：`docs/framework/domains/frontend.md`。
 
-上游：`docs/framework/MOXIAN.md` 第 5 章至第 8 章；`docs/framework/v2/SOURCES.md` 的 S-050 至 S-056 与 S-074、S-075；`docs/framework/v2/RESEARCH.md` 第三章 3.5 节与 1.6 节的测试组；`docs/framework/domains/product-design.md` 第 7 节的可访问性七项。
+上游：`docs/framework/MOXIAN.md` 167 个规则位（现行 147、废止 20），第 5 章至第 8 章；`docs/framework/v2/SOURCES.md` 的 S-050 至 S-056 与 S-074、S-075；`docs/framework/v2/RESEARCH.md` 第三章 3.5 节与 1.6 节的测试组；`docs/framework/domains/product-design.md` 第 7 节的可访问性七项。
 
 下游：`specs/changes/<CHG-ID>/frontend.md` 增量、`specs/contract/<域>/test.md` 的界面层用例、`frontend/src` 的实现与组件测试、端到端套件、完成证据。
 
 编号口径：本文件规则编号为 `MXV2-FE-<两位序号>`，从 01 起连续，不跳号不复用；总册章级规则写作 `MXV2-<章>-<NN>`，域规则与章级规则不互相占号。
 
-执行口径：`script:` 只写本仓库现有且可原样执行的单条命令，期望退出码 0，命令在仓库根执行；脚本执行只作本地核对，不单独构成放行门禁，放行以本条验收标准与证据路径为准。域规则的执行方式由首条依据决定：首条依据落在总册 45 条 script 规则之一时，写该脚本的 `--rule <总册编号>` 命令；首条依据是 ai-review 时写验收标准要点、谁判、误放行、误拦截四要素，四要素缺一不得冻结。`npm`、`go.ps1`、Playwright 等工程命令是真实可跑的单条检查，保留 `script:`，不计入总册 45 条规则集合。本文件 script 10 条、ai-review 54 条，其中复用总册单条规则 0 条不同编号、工程命令 10 条。总册 45 条 script 规则是全册的单条可跑集合，域规则是它的下位细化，一条总册规则可支撑多条域规则；四份域文件合计 script 28 条、ai-review 278 条，与总册条数不是同一集合，域文件不重复统计总册条数。
+执行口径：`script:` 只写本仓库现有且可原样执行的单条命令，期望退出码 0，命令在仓库根执行；脚本执行只作本地核对，不单独构成放行门禁，放行以本条验收标准与证据路径为准。域规则的执行方式由首条依据决定：首条依据落在总册对应规则条目时，按其执行字段写；执行字段为 script 时写该脚本的 `--rule <总册编号>` 命令，执行字段为 ai-review 时写验收标准要点、谁判、误放行、误拦截四要素，四要素缺一不得冻结。`npm`、`go.ps1`、Playwright 等工程命令是真实可跑的单条检查，保留 `script:`，不计入总册规则集合。本文件 script 10 条、ai-review 54 条，其中复用总册单条规则 0 条不同编号、工程命令 10 条。总册各规则条目的执行字段见总册对应条目，域规则是它的下位细化，一条总册规则可支撑多条域规则；四份域文件合计 script 28 条、ai-review 278 条，与总册条数不是同一集合，域文件不重复统计总册条数。
 
 增量覆盖率没有基线时按待补处理，不算失败；先补 `frontend/coverage/coverage-final.json` 与 `backend/coverage.out` 基线，补出后人工核对覆盖率报告与基线的差值并写核对结论，补基线路径见 `docs/framework/v2/BACKLOG.md` 的 B-16。
 
