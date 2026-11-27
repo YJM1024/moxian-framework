@@ -1,5 +1,7 @@
 # 框架 v2 实现方案
 
+本文是 v2.0 阶段的执行记录，其中的 check-*.mjs 脚本已归档，见 `docs/framework/archive/README.md` 的归档脚本说明；现行做法以 v2.1 正文为准。
+
 状态：已冻结
 变更号：CHG-FW-002
 依据：`docs/framework/v2/DESIGN.md`（已冻结，冻结时间 2026-11-27 03:44，整卷 sha256 `52a9409f4a39cabed1b41f522717c69d64910392208c27ab681a19d09d5dad1a`）
@@ -608,8 +610,8 @@ P1 收尾，也就是总册九章写完、附录 A 至 D 有骨架、285 条映�
 |---|---|---|---|
 | `scripts/check-rule-fields.mjs` | 六字段完整性、ID 唯一、单章不超 30、合计不超 180、执行手段前缀合法；另按 T-04 三条判据算齐全率：每条规则有判据字段、`ai-review` 四要素齐全、`script` 带命令与期望退出码，齐全率须 100% | `node scripts/check-rule-fields.mjs --file docs/framework/MOXIAN.md` | 退出码 0，输出 `158 rules, 0 error, 0 warning, coverage 100%` |
 | `scripts/check-points.mjs` | 点链基数、五类点文件齐全、`LINKAGE.md` 八列、点编号连续 | `node scripts/check-points.mjs --change CHG-FW-002` | 退出码 0；缺文件或基数不符退出码 1 并列出断点 |
-| `scripts/check-mapping.mjs` | 285 行覆盖、旧号唯一、每个新位至少被引用一次 | `node scripts/check-mapping.mjs --table docs/framework/v2/IMPLEMENT.md --old docs/framework/archive/v1.7.5/MOXIAN.md` | 输出 `285/285 mapped, 0 orphan, 0 duplicate` |
-| `scripts/check-archive.mjs` | 归档副本 12 份齐、sha256 与 `INDEX.md` 一致、现行目录无旧版正文残留 | `node scripts/check-archive.mjs --archive docs/framework/archive/v1.7.5` | 退出码 0，输出 `12/12 files verified` |
+| 映射表人工核对（原脚本已归档） | 285 行覆盖、旧号唯一、每个新位至少被引用一次 | 人工核对，无脚本命令；做法见 `docs/framework/archive/README.md` 的「归档脚本说明」 | 285/285 mapped、0 orphan、0 duplicate |
+| 归档副本人工核对（原脚本已归档） | 归档副本 12 份齐、sha256 与 `INDEX.md` 一致、现行目录无旧版正文残留 | 人工核对，无脚本命令；做法见 `docs/framework/archive/README.md` 的「归档脚本说明」 | 12/12 一致 |
 
 四个脚本都是零依赖、只读，与现有 9 个脚本风格一致：`--json` 可选，`--self-test` 各带一通过一失败夹具，夹具放 `.tmp/gate-fixtures/<gate>/{pass,fail}`，固定时钟 `2026-11-24T12:00+08:00`（沿用 `GATES.md` 第 5 节）。`check-mapping.mjs` 在 P1 时 `--old` 先指向现行 `docs/framework/MOXIAN.md`，P5 归档完成后改指归档副本，并在脚本里同时接受两个路径。
 
@@ -692,7 +694,7 @@ P1 收尾，也就是总册九章写完、附录 A 至 D 有骨架、285 条映�
 | P4 | `node scripts/check-spec-language.mjs --self-test` | 12 条规则各一命中，0 漏报 | R8 至 R12 未全实现，回 5.5 表 |
 | P4 | `node scripts/check-evidence.mjs --self-test` | `18 passed, 0 failed`（计划值） | 存量 1497 条 error 不算失败，看 self-test 段 |
 | P4 | `node scripts/check-gates.mjs --self-test` | 每个夹具 pass 退出码 0、fail 退出码 1，连续三次同结果 | 结果不稳先查夹具时钟 |
-| P5 | `node scripts/check-archive.mjs --archive docs/framework/archive/v1.7.5` | `12/12 files verified` | 哈希不符，说明归档副本被改过，重取副本 |
+| P5 | 人工核对归档副本 12 份与 `INDEX.md` 的 sha256，做法见 `docs/framework/archive/README.md` 的「归档脚本说明」 | 12/12 一致 | 哈希不符，说明归档副本被改过，重取副本 |
 | P5 | `node scripts/verify-all.mjs` | L0 四项全绿，四层按原顺序跑完 | L0 失败即停，先修结构问题 |
 | P5 | `node scripts/check-gates.mjs --stage exit --change CHG-FW-002` | 退出码 0 | 按 `GATES.md` 的 `U-12` 口径登记未实现项 |
 
@@ -704,7 +706,7 @@ P1 收尾，也就是总册九章写完、附录 A 至 D 有骨架、285 条映�
 
 症状是 `check-mapping.mjs` 报出 `orphan` 或 `duplicate`，或附录 B 有规则位的“来源出处”为空。发生原因通常是 P1 写九章时按主题重排，某条被并进相邻条却没有在映射表里登记，或者同一旧号被两处引用。
 
-检测命令：`node scripts/check-mapping.mjs --table docs/framework/v2/IMPLEMENT.md --old docs/framework/archive/v1.7.5/MOXIAN.md`，输出必须正好 285 行且旧号唯一。
+检测办法：人工核对映射表 285 行覆盖、旧号唯一、每个新位至少被引用一次；做法见 `docs/framework/archive/README.md` 的「归档脚本说明」。
 
 回退办法：不动归档副本，回 P1 补映射表与附录 B 的引用；如果整章结构已经乱了，用 `git restore -- docs/framework/MOXIAN.md` 恢复上一版再重写该章，或者从 `archive/v1.7.5/MOXIAN.md` 取原文重新对照。禁止 `git reset --hard`。P0 的 `sha256sums.txt` 是判定“归档副本没被改动”的唯一凭据，任何时候都不能改它。
 

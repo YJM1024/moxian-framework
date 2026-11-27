@@ -1,5 +1,7 @@
 # 墨线框架 v2.0.0 两轮验收报告（ACCEPT）
 
+本文是 v2.0 阶段的执行记录，其中的 check-*.mjs 脚本已归档，见 `docs/framework/archive/README.md` 的归档脚本说明；现行做法以 v2.1 正文为准。
+
 两轮初次验收结论都是 **partial**（部分通过）；经第 8 至 11 节复验，功能返工项与冻结记录断档（RC-17）均已闭环，整包改判 **pass**，由独立验收方 v2-accept 于 2026-11-27 签字，可进入提交。第一轮的规则结构成立：九章 158 条、六字段 158/158、120 条 script 命令全部指到真实脚本并带 `--rule`、38 条 ai-review 四要素内容齐全、30 条旧规则抽样 30/30 在附录 B 有去向；不成立的是 V2-04 点链（`points/` 目录不存在）与 V2-08 回滚包（演练记录缺失、范围不足），以及冻结程序（先冻结后验收，验收期间改过 3 条规则）。第二轮的 verify-all 退出码 1（五层过、后端与前端两层红），委托的 8 个门禁里 2 个非 0（check-trace、check-contract），补跑的 check-matrix-coverage 同样非 0，而 `--stage exit` 却判 PASS，因为该阶段只汇总 7 个子检查，不含 trace、docs、contract、matrix 四门。原因码 RC-01 至 RC-07，返工清单见第 6 节。
 
 ## 1 验收对象与执行口径
@@ -126,7 +128,7 @@ MX-11-12 的落差可定位：旧条在 `docs/framework/archive/v1.7.5/MOXIAN.md
 | `check-rule-fields.mjs --file docs/framework/MOXIAN.md` | 0 | 815 | 158 rules，0 error，2 notice，coverage 100% |
 | `check-points.mjs --change CHG-FW-002` | 0 | 28 | 0 issue，4 notice |
 | `check-mapping.mjs --table … --old …` | 0 | 25 | 0 issue，2 notice（285/285） |
-| `check-archive.mjs --archive docs/framework/archive/v1.7.5` | 0 | 26 | 12/12 files verified |
+| 归档副本人工核对（原脚本已归档） | — | — | 12/12 与 `INDEX.md` 一致，做法见 `docs/framework/archive/README.md` 的「归档脚本说明」 |
 | `check-trace.mjs` | **1** | 686 | failures=1：`specs/changes/CHG-FW-002/spec.md:1 T5 缺少 Implements 声明` |
 | `check-contract.mjs` | **1** | — | 10 passed，1 failed（CONV 的 MX-G-63） |
 | `check-evidence.mjs` | 0 | 77 | PASS 12，WARN 65，FAIL 0 |
