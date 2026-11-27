@@ -3,7 +3,7 @@
 版本：v0.3，2026-11-24。状态：active，随第二阶段压测补缺修订；v0.3 于同日新增第 3.1 节分片路由与第 6.1 节回退数据保全，v0.2 的内容保留。
 定位：本文件是一次数据迁移的完整计划，写清范围、批次、重试、续跑、中断判定、备份、演练与回滚，缺字段的计划不得进入契约门。
 依据：`docs/framework/MOXIAN.md` 第 8 章 MX-8-27、MX-8-28 与表 8-2，`docs/framework/domains/backend.md` MX-BE-23，`docs/framework/TASK-MATRIX.md` 第 3 节数据迁移行。
-落点：`specs/changes/<CHG-ID>/migration-plan.md`，与 `spec.md`、`design.md`、`evidence.md` 同目录。
+落点：验收报告第 3 节改动与第 6 节迁移小节；迁移计划随变更包目录 `specs/changes/<CHG-ID>/` 存放，与各角色 spec 同目录。
 
 ## 1 使用条件
 

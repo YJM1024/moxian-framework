@@ -3,7 +3,7 @@
 版本：v1.0，2026-11-24。状态：active。
 定位：本文件是一个变更或一个页面的本地化检查记录，一次检查填一份，覆盖语言清单、词条键、格式、伪本地化与缺键回退五类。
 依据：`docs/framework/domains/frontend.md` 第 3.6 节与 MX-FE-54、MX-FE-55，`docs/framework/domains/product-design.md` MX-PD-29 的本地化范围，`docs/framework/templates/contract-table.md` 类 1 的本地化列。
-落点：`specs/changes/<CHG-ID>/evidence.md` 的本地化节，长期清单并入 `specs/frontend/<域>/spec.md` 的文案资源节。
+落点：验收报告第 4 节的本地化行，长期清单并入 `specs/frontend/<域>/spec.md` 的文案资源节。
 
 ## 1 使用条件
 
@@ -68,7 +68,7 @@
 | 语言覆盖 | 逐语言写完成率与未覆盖键数 |
 | 未通过项 | 键名或格式项、原因与责任人 |
 | 填写人 | 前端 owner 角色名与日期 |
-| 判定人 | 验收角色名与日期 |
+| 完成确认 | owner 自证，写日期 |
 | 产品确认 | 语言清单与默认语言确认人 |
 
 ## 8 检查清单

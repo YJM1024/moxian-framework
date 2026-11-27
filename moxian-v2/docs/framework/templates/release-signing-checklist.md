@@ -3,7 +3,7 @@
 版本：v1.0，2026-11-24。状态：active。
 定位：本文件是一次发布产物签名与放行的检查记录，一次发布填一份，覆盖构建、签名、验签、时间戳、可复现构建、更新清单与回滚点七类。
 依据：`docs/framework/domains/backend.md` MX-BE-77、MX-BE-78，`docs/framework/templates/contract-table.md` 类 11，`docs/framework/templates/cli-release-checklist.md` 第 1 至 9 节。
-落点：`specs/changes/<CHG-ID>/release-signing.md`，证据另存 `specs/changes/<CHG-ID>/evidence.md` 的发布节。
+落点：验收报告第 6 节放行小节，证据写第 4 节；发布签名记录随变更包目录 `specs/changes/<CHG-ID>/` 存放。
 
 ## 1 使用条件
 交付安装包、更新清单、命令行产物或桌面更新任一项时必填。四项都不成立时在变更包写 `N/A：<理由>` 与重开条件。填写人取发布执行人，复核人取验收，密钥保管人按 `ROLES.md` 的证书与密钥写作用域规则执行。
@@ -77,7 +77,7 @@
 | 结论 | `pass`、`partial`、`failed` 三值之一 |
 | 证据 | 签名记录、验签输出、哈希值、可复现构建结论、更新清单与回滚记录六类 |
 | 填写人 | 发布执行人角色名与日期 |
-| 复核人 | 验收角色名与日期 |
+| 复核人 | 项目经理完成确认与日期 |
 | 放量结论 | 全量生效或已回滚两值之一，写最终档位与结束时间 |
 
 ## 9 检查清单

@@ -1,6 +1,6 @@
 # 框架模板目录
 
-版本：v2.1.0，2026-11-27。状态：active。计数：现行 35 份，已废止 7 份（`archive/` 2 份、原地保留 5 份）。
+版本：v2.1.0，2026-11-27。状态：active。计数：现行 34 份，已废止 8 份（`archive/` 3 份、原地保留 5 份）。
 
 ## 1 使用约定
 
@@ -55,7 +55,6 @@
 | `permission-policy-matrix.md` | 权限策略矩阵 |
 | `release-signing-checklist.md` | 发布签字清单 |
 | `repro.md` | 缺陷复现卡 |
-| `review.md` | 评审记录 |
 | `runbook.md` | 运行手册 |
 | `security-matrix.md` | 安全矩阵 |
 | `sharding-plan.md` | 分片方案 |
@@ -64,12 +63,13 @@
 | `token-change.md` | 令牌变更记录 |
 | `visual-baseline.md` | 视觉基线 |
 
-## 4 已废止（7）
+## 4 已废止（8）
 
 | 文件 | 处置 | 原因 |
 |---|---|---|
 | `archive/accept.md` | 移入 `archive/`，首行标注 v2.0 | v2.0 的七节验收模板，由现行四节 `accept.md` 取代 |
 | `archive/delivery.md` | 移入 `archive/`，首行标注 v2.0 | 七节交付报告作废，验收结论并入 `accept.md` |
+| `archive/review.md` | 移入 `archive/`，首行标注 v2.0 | v2.1 不设第二人签字与评审门禁，评审问题并入验收报告第 3 节 |
 | `change.md` | 原地保留，标注 v2.0 历史 | v2.1 变更包由五份角色 spec 组成，不再有变更总表 |
 | `evidence-index.md` | 原地保留，标注 v2.0 历史 | 证据并入验收报告第 2 节测试结果 |
 | `task-card.md` | 原地保留，标注 v2.0 历史 | 任务卡与 tasks.md 废止，派单由主会话消息承载 |
@@ -78,4 +78,4 @@
 
 ## 5 计数口径
 
-现行 35 份 = 沿用 v2.0 的 26 份 + 本次新建或重写 9 份。已废止 7 份 = `archive/` 2 份 + 原地保留 5 份。`archive/` 内文件不参与名册计数之外的任何用途，只在对照 v2.0 历史包时引用，清单见 `archive/README.md`。
+现行 34 份 = 沿用 v2.0 的 25 份 + 本次新建或重写 9 份。已废止 8 份 = `archive/` 3 份 + 原地保留 5 份。`archive/` 内文件不参与名册计数之外的任何用途，只在对照 v2.0 历史包时引用，清单见 `archive/README.md`。

@@ -3,7 +3,7 @@
 版本：v1.0，2026-11-24。状态：active。
 定位：本文件是单个变更或单个服务的租户隔离检查记录，一次检查填一份，覆盖租户上下文、隔离不变量、配额与跨租户用例四类。
 依据：`docs/framework/domains/backend.md` MX-BE-79、`docs/framework/domains/testing.md` MX-QA-61 与 `docs/framework/templates/contract-table.md` 类 10A。
-落点：`specs/changes/<CHG-ID>/evidence.md` 的租户隔离节，长期检查另存 `docs/testing/TENANT-<域>-<YYYYMMDD>.md`。
+落点：验收报告第 4 节的租户隔离行，长期检查另存 `docs/testing/TENANT-<域>-<YYYYMMDD>.md`。
 
 ## 1 使用条件与填写人
 
@@ -69,7 +69,7 @@
 | 结论 | `pass`、`partial`、`failed` 三值之一 |
 | 未通过项 | 编号、原因与修复责任人 |
 | 填写人 | 后端 owner 角色名与日期 |
-| 复核人 | 验收角色名与日期 |
+| 复核人 | 项目经理完成确认与日期 |
 | 安全复核 | 安全评审人（`ROLES.md` MX-R-39）角色名与日期，未涉及鉴权时写 `N/A：<理由>` |
 
 ## 8 检查清单
@@ -81,4 +81,4 @@
 - [ ] 跨租户读取、写入、删除、导出四类用例各有记录。
 - [ ] 配额单位、上限、周期与超限动作四项齐全。
 - [ ] 结论只取三值，未通过项有责任人与修复期限。
-- [ ] 填写人、复核人与安全复核人齐全，判定人不重合。
+- [ ] 填写人、复核人与安全复核人齐全，完成确认由 owner 自证。
