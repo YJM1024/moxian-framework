@@ -1,120 +1,87 @@
-# 墨线框架 v1.7.3
+# 墨线框架 v2.0.0
 
-墨线是一套面向单机、多智能体协作的规格驱动开发框架。它用中文文档定义流程、角色与判据，用可执行脚本把契约、追溯、覆盖率与证据要求变成门禁，适合在一个代码仓内由设计、前端、后端与验收角色分头推进需求。
+墨线是一套面向单机、多智能体协作的规格驱动开发框架。它用中文文档定义流程、角色与判据，把契约、追溯、覆盖率与证据要求写成可检查的条目，供设计、前端、后端与验收角色在同一个代码仓里分头推进需求。本仓是框架正文的独立仓，v2.0.0 于 2026-11-27 从主仓 simo 的 `docs/framework/` 整体迁入；主仓此后不再维护框架正文，只保留指向本仓的指针。
 
-本仓是框架 v1.7.3 的独立抽取，同步于 2026-11-25。v1.7.3 为维护版，只同步推理档位口径涉及的 11 个文档，其余内容与 v1.7.2 相同。源仓 `docs/framework/` 的 72 个文件按原样复制到 `docs/`，另同步 `docs/process/RUNBOOK.md` 与源仓 `docs/plan/DECISIONS.md`；七个门禁脚本与两个性能测量脚本沿用，其中五个门禁脚本按新布局改写 `docs` 路径，四个脚本随 v1.7.2 更新判定实现与自检计数，另附 V15 至 V172 五份版本验收报告与契约门禁的参考输入。远端为 `git@github.com:YJM1024/moxian-framework.git`，`main` 已推送，本地 HEAD 与远端一致。
+远端为 `git@github.com:YJM1024/moxian-framework.git`，页面为 <https://github.com/YJM1024/moxian-framework>，分支 `main`。
 
-## 四层结构
+## 本仓是什么
 
-| 层 | 位置 | 作用 |
-|---|---|---|
-| 总册 | `docs/MOXIAN.md` | 流程主线、规则名册、版本表与附录，共十三章、284 条规则 |
-| 矩阵 | `docs/TASK-MATRIX.md` | 八类任务乘六个阶段的动作、模板与门禁对照，共 66 格 |
-| 域 | `docs/domains/` | 产品设计、前端、后端、测试四个域的实施规则 |
-| 模板 | `docs/templates/` | 变更包、任务卡、证据、契约表与 12 份专项模板，共 30 份产物模板 |
+本仓只放框架本身：规则册、矩阵、角色、档位、门禁、模板、域增量、适配层，以及 v2 的设计、调研、验收与回滚记录。它不绑定某一个产品或代码仓，接入方按自己的项目建立变更包与证据，再引用本仓的条文和判据。
 
-`docs/ROLES.md`、`docs/EFFORT.md`、`docs/GATES.md`、`docs/ADOPTION.md`、`docs/ABSORB-RECONCILE.md` 是配套册，`docs/adapters/`、`docs/absorb/`、`docs/accept/` 是适配说明、吸收对账与历史验收记录，`docs/process/` 只有随 v1.7.1 带入的 `RUNBOOK.md`，标 superseded，只作历史记录。规则身份以总册与 `GATES.md` 为准，配套册不另立规则；角色规则 42 条登记在 `ROLES.md`，门禁 21 道、68 条门禁规则登记在 `GATES.md`。
+版本号只写在本仓根目录的 `VERSION` 一处，当前为 `v2.0.0`。条文里出现的 `docs/framework/…` 都从本仓根目录起算，克隆后可以直接按路径打开，不需要做层级换算。
 
-## 三道入口
-
-1. 判任务类型：读 `docs/TASK-MATRIX.md` 第 3 节，在八类任务中定档，得到该类型的动作、模板与门禁清单。
-2. 走流程：按 `docs/MOXIAN.md` 第 5 章至第 11 章推进变更包与长期 spec，角色、评审与交接按 `docs/ROLES.md`。
-3. 跑门禁：按 `docs/GATES.md` 第 2 节的四个时机执行，结构、语言、契约、追溯、增量覆盖、证据与矩阵覆盖率各有对应脚本。
-
-接入方通常先用矩阵定档，再在变更包里登记契约与验收判据，最后按门禁脚本逐项取证。三条入口的顺序不能颠倒，因为矩阵决定适用哪些门禁，门禁又反过来约束变更包要写哪些字段。
-
-## 怎么用
-
-脚本只依赖 Node.js，本仓验证使用 v24.21.0，不需要安装依赖。
-
-`examples/reference-conv/` 是随仓提供的 P1-CONV 参考输入，含产品、设计、前端、后端四列 spec 与测试计划，`docs/product/TREE.md` 与 `TRACEABILITY.md`，`specs/test/e2e/README.md`，以及 CHG-CONV-001 至 CHG-CONV-007 七个变更包；每个包都有 proposal、spec、tasks、test-plan 与 evidence。前四道门禁跑在这份输入上，矩阵覆盖率门禁读本仓 `docs/`，五条命令都在仓库根目录执行：
-
-```powershell
-node scripts/check-gates.mjs --root examples/reference-conv
-node scripts/check-trace.mjs --root examples/reference-conv
-node scripts/check-contract.mjs --root examples/reference-conv
-node scripts/check-spec-language.mjs --root examples/reference-conv
-node scripts/check-matrix-coverage.mjs
-```
-
-实测全部退出码 0：结构门禁 42 项通过、0 项失败、57 条 warning，warning 来自按源仓原样复制的在途变更包缺少十节模板的若干节；追溯门禁 188 项检查、失败 0、提示 0，TREE 的 13 个 PRD 与 TRACEABILITY 的声明数、实际数一致；契约门禁 7 项通过、0 项失败、2 条提示，一条是后端 spec 多出 `limit`、`before` 两个字段，一条是参考契约表没有前端 spec 字段行；语言门禁 0 error、0 warning；矩阵覆盖率 66/66（100%），0 条提示。
-
-`--root` 指定参考输入的根目录，门禁从该目录解析 `specs/` 与 `docs/`。不带 `--root` 时读当前仓库根，本仓没有 `specs/changes` 与 `docs/product`，结构门禁退出码 2、追溯门禁报 2 条 T1，这两个结果说明缺接入方输入，不作为本仓的失败结论。
-
-增量覆盖率与证据两道门禁读取改动文件清单与按变更组织的证据，参考输入没有这两类输入，因此只跑自检。九个脚本的自检都不访问外部网络，性能与弱网脚本在本机临时端口完成：
-
-```powershell
-node scripts/check-gates.mjs --self-test
-node scripts/check-trace.mjs --self-test
-node scripts/check-contract.mjs --self-test
-node scripts/check-matrix-coverage.mjs --self-test
-node scripts/check-spec-language.mjs --self-test
-node scripts/check-incremental-coverage.mjs --self-test
-node scripts/check-evidence.mjs --self-test
-node scripts/measure-perf.mjs --self-test
-node scripts/measure-net.mjs --self-test
-```
-
-自检断言数为结构 15、追溯 11、契约 29、语言 17、增量覆盖 14、证据 14、性能 34、弱网 33，矩阵自检以 PASS 结束，九条命令的退出码都是 0。
-
-## 仓库结构
+## 目录结构
 
 ```
 moxian-framework/
-├─ README.md
-├─ VERSION
-├─ CHANGELOG.md
-├─ LICENSE
-├─ .gitignore
-├─ docs/
-│  ├─ MOXIAN.md
-│  ├─ TASK-MATRIX.md
-│  ├─ GATES.md
-│  ├─ ROLES.md
-│  ├─ EFFORT.md
-│  ├─ ADOPTION.md
-│  ├─ ABSORB-RECONCILE.md
-│  ├─ README.md
-│  ├─ domains/
-│  ├─ templates/
-│  ├─ adapters/
-│  ├─ absorb/
-│  ├─ accept/
-│  ├─ plan/
-│  └─ process/
-├─ scripts/
-└─ examples/
-   ├─ index.md
-   └─ reference-conv/
+├─ README.md              本页
+├─ VERSION                当前版本号
+├─ CHANGELOG.md           v1.0 至 v2.0.0 的版本演进
+├─ LICENSE                MIT
+├─ docs/framework/
+│  ├─ MOXIAN.md           总册，九章 158 条规则，附录 A 至 D
+│  ├─ TASK-MATRIX.md      八类任务乘六个阶段，66 格
+│  ├─ ROLES.md            七个角色的可写范围、禁止事项与交接
+│  ├─ EFFORT.md           四档投入与 48 格档位表
+│  ├─ GATES.md            门禁条目、规则归位与人工判据
+│  ├─ ADOPTION.md         存量项目迁移到 v2 的步骤与判据
+│  ├─ ABSORB-RECONCILE.md 吸收对账
+│  ├─ README.md           框架入口与导航
+│  ├─ VERSION             框架版本号，与根目录一致
+│  ├─ domains/            产品设计、前端、后端、测试四个域的增量规则
+│  ├─ templates/          31 份产物模板
+│  ├─ adapters/           适配层
+│  ├─ appendix/           附录 A 模板索引、B 旧号索引、C 修订登记、D 未决项
+│  ├─ v2/                 设计、施工、验收、日志、回滚、调研与来源
+│  ├─ accept/             历史验收记录
+│  ├─ absorb/             吸收记录
+│  └─ archive/            历史版本副本，只读
+├─ scripts/               v1.7.3 时期的门禁脚本，见“已知边界”
+└─ examples/              v1.7.3 时期的参考输入与验收记录
 ```
 
-`.tmp/` 在脚本自检与门禁运行时生成，已被忽略。
+`docs/framework/archive/` 下有两份历史快照：`v1.7.3/` 是本仓 v2 之前的全部文档，`v1.7.5/` 是主仓归档的十二章正文副本与索引，两者都按搬迁时的字节原样保留。
 
-## 路径约定
+## 怎么用
 
-`docs/` 内的正文按源仓原样保留，仍然写 `docs/framework/…`。在本仓读取时按去掉 `framework/` 一层来映射，例如 `docs/framework/MOXIAN.md` 对应 `docs/MOXIAN.md`。这样处理是为了不改动冻结文本，代价是正文里的链接需要读者按此规则转换；599 处引用分布在 75 个文件里。
+第一次进入先读 `docs/framework/README.md`，它回答每个文件管什么、门禁怎么跑、出问题怎么回滚。之后按五步推进。
 
-脚本侧的路径已经改到新布局：`docs/framework/…` 改为 `docs/…`，`docs/process/templates/…` 改为 `docs/templates/…`。新增的 `measure-perf.mjs` 与 `measure-net.mjs` 不含 `docs` 路径常量，`measure-perf.mjs` 只把注释里的出处改为 `docs/MOXIAN.md`；脚本之间没有相对 import，因此没有模块说明符需要改写。
+1. 判任务类型：读 `docs/framework/TASK-MATRIX.md` 第 3 节，在八类任务中定档，得到该类型的动作、模板与门禁清单；档位按 `docs/framework/EFFORT.md` 取。
+2. 建变更包：按 `docs/framework/MOXIAN.md` 第 4 章与第 5 章拆点链、写派单卡，owner 按 `docs/framework/ROLES.md`。
+3. 写判据：每个需求点在开工前冻结验收判据，判据写不出脚本形式时按 `docs/framework/GATES.md` 的人工判据四要素记录。
+4. 跑门禁：按 `docs/framework/GATES.md` 第 2 节的三个时机执行，汇总入口是接入仓的 `node scripts/verify-all.mjs --stage pre|point|exit`。
+5. 验收与回滚：按 `MOXIAN.md` 第 8 章签收，按第 9 章回滚与复盘。
 
-## 与源仓的差异
+已有项目迁到 v2 时先读 `docs/framework/ADOPTION.md`，它给出迁移步骤、判据与回退方式。旧规则号到新规则位的映射在 `MOXIAN.md` 附录 B，查历史引用用索引，不在正文恢复旧号。
 
-- `docs/MOXIAN.md`、`docs/TASK-MATRIX.md` 等 72 个文件按字节复制，正文未改；v1.6 新增的 12 份专项模板、两份验收报告与 `STRESS-RERUN-25-20261125.md` 均按原样保留，v1.7 新增的 `ACCEPT-MOXIAN-V17-20261125.md`、v1.7.1 新增的 `ACCEPT-MOXIAN-V171-20261125.md` 与 v1.7.2 新增的 `ACCEPT-MOXIAN-V172-20261125.md`、`templates/component-spec.md` 同样逐字节复制。唯一例外是 `docs/GATES.md`：第 4 节新增 4.1 小节写镜像仓的参考输入运行口径，其余正文未改。
-- 源仓 `docs/process/templates/` 下被矩阵引用的 7 份模板并入 `docs/templates/`，分别是 proposal、spec、design、tasks、test-plan、evidence 与 RETRO。不并入时矩阵门禁会因模板文件缺失而达不到 66/66。
-- `docs/plan/DECISIONS.md` 在 v1.7 时是 ADR 落点占位；v1.7.1 起同步源仓决策记录，带入 DEC-11 至 DEC-33。矩阵门禁只要求该文件存在，内容不参与判定。
-- 五个门禁脚本的 `docs` 路径常量、提示文案与矩阵自检夹具改到新布局，`check-trace.mjs` 与 `check-spec-language.mjs` 没有 `docs` 路径可改，`measure-perf.mjs` 只改注释出处；v1.7 新增的 `measure-net.mjs` 不含 `docs` 引用。三个脚本的自检计数输出随 v1.7 带入。v1.7.1 更新 `check-gates.mjs`、`check-contract.mjs`、`check-matrix-coverage.mjs` 与 `check-spec-language.mjs` 四个脚本的判定实现与自检计数，N/A 声明、历史包两段式 Covers 编号、ADR 与复现记录模板名册、R3 与 R7 判定随之生效，自检断言分别为 15、18、22 与 10 条，合计 65 条。v1.7.2 再更新这四个脚本：契约门补字段类型一致性、契约表缺格、任务状态机中文状态映射与前端维度契约行四项检查，矩阵门补组件 spec 模板名册并把模板引用覆盖到 102/102，语言门补 R2 无量纲豁免、R5 缩写已定义视为引用与 R7 判据映射行不计重复定义三类误报规则，自检断言变为 15、29、26 与 17 条，合计 87 条。
-- `examples/` 下的 `ACCEPT-MOXIAN-V15-20261125.md` 与 `REPLAY-CHG-CONV-007.md` 取自 `docs/framework/accept/`，未改一字；`examples/reference-conv/specs/` 是从源仓复制的 P1-CONV 最小输入集，v1.7 同步了 7 个变更包 spec 的首部字段，v1.7.1 同步了 P1-CONV 的契约表与后端、设计、前端、产品四列 spec，契约门禁在参考输入上 7 项全部通过、0 条提示；v1.7.2 把前端 spec 的任务展示态与迁移表同步到源仓当前版本，契约门禁在参考输入上 7 项通过、0 项失败、2 条提示；本次再从源仓补入 7 个变更包的 tasks、test-plan 与 evidence，CHG-CONV-007 另补 proposal，并新增 `docs/product/TREE.md`、`docs/product/TRACEABILITY.md` 与 `specs/test/e2e/README.md`，使结构、追溯与语言三道门禁也能在参考输入上跑通。
-- `LICENSE` 从源仓根目录原样复制，为 MIT 许可，著作权人 YJM1024。源仓已有许可证，因此没有新建待定许可文件。
+门禁脚本由接入仓维护，执行时用环境变量 `SIMO_FRAMEWORK_ROOT` 指向本仓根目录，脚本再按 `docs/framework/…` 读取条文与模板。本仓只提供正文、模板与判据，不提供某一项目的 `specs/` 输入。
 
-## 版本与许可
+## v2 与 v1.7.5 的关系
 
-`VERSION` 为 `v1.7.3`，对应 2026-11-25 的 v1.7.3 维护版，版本演进见 `CHANGELOG.md`；v1.7 验收报告见 `docs/accept/ACCEPT-MOXIAN-V17-20261125.md`，v1.7.1 验收报告见 `docs/accept/ACCEPT-MOXIAN-V171-20261125.md`，v1.7.2 验收报告见 `docs/accept/ACCEPT-MOXIAN-V172-20261125.md`，三份均于 2026-11-25 由独立验收人签字通过，结论 pass（验收人分别为 `mx-accept-v17`、`mx-accept-v171` 与 `mx-accept-v172`）；v1.7.3 为推理档位口径调整，不单写验收报告，待后续验收合并。许可沿用源仓的 MIT 许可，见 `LICENSE`；如需更换许可方式，应先取得著作权人确认。
+v2.0.0 是对 v1.7.5 的结构性重写，不是增量修订。规则册从十三章加附录改为九章加附录 A 至 D，条目从 285 条收到 158 条，改写 203 条、合并 56 条、保留 23 条、删除 3 条，被合并吸收的 118 条不再单独成条。
 
-## 已知遗留
+| 维度 | v1.7.5 | v2.0.0 |
+|---|---|---|
+| 章数 | 13 章加附录 | 9 章加附录 A 至 D |
+| 条数 | 285 条 | 158 条，另附录 D 6 条 |
+| 规则编号 | 旧式章号加序号 | 三段式 `MXV2-<章>-<序号>` |
+| 规则字段 | 判据与执行混写 | 六字段固定，判据与执行分开 |
+| 角色 | 8 个 | 7 个，新增调研员 |
+| 状态 | 需求点五档与任务卡五状态并存 | 统一四值：草稿、已冻结、实现中、通过 |
+| 门禁 | 名册与逐条判据混排 | 名册保留，判定条件集中到 `GATES.md` |
+| 原无判据门禁 | 24 条待建 | 14 条转脚本、10 条转人工，零旁路 |
+| 验收层级 | 三层 | 三层不变 |
 
-- `docs/` 正文中的 599 处 `docs/framework/…` 自引用未做批量替换，阅读时需按上一节映射。
-- 不传 `--root` 时五道门禁读当前仓库根：契约门禁扫描不到 `specs/contract`，报 1 条 MX-G-26；追溯门禁缺 `docs/product/TREE.md` 与 `TRACEABILITY.md`，报 2 条 T1；结构门禁因 `specs/changes` 不可读以退出码 2 结束。三个结果都来自缺接入方输入，README 的命令统一用 `--root examples/reference-conv`，不影响本仓自验。
-- `check-trace.mjs` 自带 11 条断言的自检通过，`check-spec-language.mjs` 的自检为 17 条，两者的门禁判定在参考输入上分别是 188 项与 0 error、0 warning。
-- `check-spec-language.mjs` 的规则来源 `docs/process/SPEC-STANDARD.md` 不在本次抽取范围，未随仓提供，脚本注释保留了该出处。
-- `measure-net.mjs` 已在 v1.7 建立并带自检；框架仓内没有真实网络测量对象，弱网三档实测数据仍需接入方按 `docs/domains/testing.md` 的口径自行采集。
-- `docs/plan/DECISIONS.md` 自 v1.7.1 起同步源仓决策记录，含 DEC-11 至 DEC-34；`docs/process/` 只随仓提供 `RUNBOOK.md`，`SPEC-STANDARD.md` 与其余 process 规范不在抽取范围。
-- 远端为 `git@github.com:YJM1024/moxian-framework.git`，`main` 已推送；推送后以 `git ls-remote origin main` 与本地 `HEAD` 一致为准。
+处理细节写在 `docs/framework/v2/CHANGELOG.md`，迁移步骤写在 `docs/framework/ADOPTION.md`，v1.7.5 原文在 `docs/framework/archive/v1.7.5/`。冻结的验收编号不改名，历史变更包继续有效，未开工任务按新册受理。
+
+## 版本与变更记录
+
+`VERSION` 是版本号的唯一出处，当前为 `v2.0.0`。根目录 `CHANGELOG.md` 汇总 v1.0 至 v2.0.0 的演进，`docs/framework/v2/CHANGELOG.md` 记录 v2 的结构性变更与差异摘要，两者不互相抄写条文。
+
+## 已知边界
+
+`scripts/` 与 `examples/` 是 v1.7.3 时期随仓带入的存量件，按当时平铺的 `docs/` 布局读取文件，v2 正文不依赖它们。v2 的十八个门禁脚本目前由接入仓（主仓 simo）维护，尚未复制进本仓；接入仓执行门禁时用 `SIMO_FRAMEWORK_ROOT` 指向本仓，即可读到 v2 的条文与模板。
+
+`docs/framework/archive/` 下的两份历史快照只读，不参与 v2 的判定，内部链接按各自当时的布局解释。
+
+许可沿用源仓的 MIT 许可，见 `LICENSE`；如需更换许可方式，应先取得著作权人确认。
