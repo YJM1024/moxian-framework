@@ -1,10 +1,10 @@
 # 墨线框架 v2 来源总表（SOURCES）
 
-本表依据 `docs/framework/v2/sources/` 下七份原始表整理：`sdd.md` 十二行、`agents.md` 十二行、`standards.md` 十行、`product-design.md` 二十七行、`engineering.md` 十五行、`testing.md` 十四行、`skills.md` 二十二行，原始表合计一百一十二行。按“同一来源占多行时合并一行”的规则，WCAG 2.2 的十一条准则合并为一条、WAI-ARIA Authoring Practices 的三个模式页合并为一条，合并后共 **100 条**，编号 S-001 至 S-100。细则与逐条判据仍以原始表为准，本表只记来源级的判定与落点。
+本表依据 `docs/framework/v2/sources/` 下七份原始表整理：`sdd.md` 十二行、`agents.md` 十二行、`standards.md` 十行、`product-design.md` 二十七行、`engineering.md` 十五行、`testing.md` 十四行、`skills.md` 二十二行，原始表合计一百一十二行。按“同一来源占多行时合并一行”的规则，WCAG 2.2 的十一条准则合并为一条、WAI-ARIA Authoring Practices 的三个模式页合并为一条，合并后共 **100 条**，编号 S-001 至 S-100；本次补充 12 条，现共 **112 条**，编号 S-001 至 S-112。细则与逐条判据仍以原始表为准，本表只记来源级的判定与落点。
 
 判定口径：**采纳**指原样纳入框架，落点必须能指到具体章节、规则号或门禁；**改造后采纳**指只取其中与框架相容的部分，其余部分说明不取的理由；**不采纳**指整条不进入框架，必须写理由，落点写“不适用”。“判据能否脚本化”按来源自身给出的判据判断：能，指有命令、退出码或可机械核对的结构；部分，指一部分可脚本核对、另一部分需人工评审；不能，指来源明确是原则或经验法则。
 
-统计：共 100 条，采纳 40 条，改造后采纳 38 条，不采纳 22 条；判据可脚本化 34 条、部分 57 条、不能 9 条。
+统计：共 112 条，采纳 44 条，改造后采纳 46 条，不采纳 22 条；判据可脚本化 35 条、部分 68 条、不能 9 条。
 
 ## 一、规范驱动开发（12 条）
 
@@ -141,8 +141,24 @@
 | S-099 | odoo-upgrade | commit 5541d98，插件 v5.1.0 | https://github.com/ahmed-lakosha/odoo-plugins/blob/master/odoo-upgrade-plugin/odoo-upgrade/SKILL.md | 技能与分发 | 不采纳 | Odoo 专用预检与校验同技术栈无关，只有先备份再变换的顺序可借鉴。 | 不适用 | 能 |
 | S-100 | changelog-generator | commit be2a406 | https://github.com/ComposioHQ/awesome-claude-skills/blob/master/changelog-generator/SKILL.md | 技能与分发 | 不采纳 | 纯提示词，无脚本、无失败路径，输出靠人读。 | 不适用 | 不能 |
 
+## 八、补充来源（12 条）
+
+| 编号 | 名称 | 版本 | 出处链接 | 类别 | 判定 | 理由 | 落点 | 判据能否脚本化 |
+|---|---|---|---|---|---|---|---|---|
+| S-101 | Principles of Chaos Engineering | 2019-03 | https://principlesofchaos.org/ | 测试 | 改造后采纳 | 稳态假设、实验组与对照组、注入真实事件与恢复判定可落到故障注入四要素，完整实验平台不在框架内。 | MXV2-QA-63 | 部分 |
+| S-102 | Why You Only Need to Test with 5 Users | 2000-03-19，2024-02-02 更新 | https://www.nngroup.com/articles/why-you-only-need-to-test-with-5-users/ | 需求与设计 | 改造后采纳 | 五个用户即可发现大部分可用性问题，支持样本下限；任务 5 至 8 条与完成率、耗时指标不在原文。 | MXV2-PD-61 | 部分 |
+| S-103 | PostgreSQL 19 文档 3.4 Transactions | PostgreSQL 19 | https://www.postgresql.org/docs/current/tutorial-transactions.html | 工程实践 | 采纳 | 事务把多步合成全有或全无的操作，BEGIN/COMMIT/ROLLBACK 与失败回滚可直接支撑事务边界。 | MXV2-BE-79 | 不能 |
+| S-104 | PostgreSQL 19 文档 14.1 Using EXPLAIN | PostgreSQL 19 | https://www.postgresql.org/docs/current/using-explain.html | 工程实践 | 采纳 | EXPLAIN 输出查询计划与扫描节点，可核对索引使用；慢查询阈值仍需项目配置。 | MXV2-BE-71 | 部分 |
+| S-105 | AIP-180 Backwards compatibility | Approved，2019-07-23 | https://google.aip.dev/180 | 工程标准 | 改造后采纳 | 同主版本内旧客户端必须可继续工作，支持旧版本兼容与破坏性变更约束；提前公告与导出入口不在原文。 | MXV2-PD-83 | 部分 |
+| S-106 | MDN HTTP caching | 文档，2026-11-28 读取 | https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching | 工程实践 | 采纳 | 响应显式设置 Cache-Control，条件请求用 If-Modified-Since 或 If-None-Match 校验，可直接落到接口缓存字段。 | MXV2-FE-63 | 部分 |
+| S-107 | RFC 3339 | 2002-07 | https://www.rfc-editor.org/rfc/rfc3339.txt | 工程标准 | 采纳 | RFC 3339 是 ISO 8601 的 profile，时间必须带与 UTC 的偏移关系，可落到 UTC 存储与带偏移格式。 | MXV2-BE-80 | 能 |
+| S-108 | WCAG 2.2 Use of Color | 2025-09-16 更新 | https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html | 需求与设计 | 改造后采纳 | SC 1.4.1 要求颜色不是唯一视觉手段，F13 把仅靠颜色传达信息的图表列为失败例，可落到非颜色区分；分类色不超过八色不在原文。 | MXV2-PD-60 | 部分 |
+| S-109 | RFC 6585 | 2012-04 | https://www.rfc-editor.org/rfc/rfc6585.txt | 工程标准 | 改造后采纳 | 429 表示限流，响应可带 Retry-After 指示等待时长，可支撑超限响应与退避；熔断阈值与半开探测不在原文。 | MXV2-BE-72 | 部分 |
+| S-110 | OWASP ASVS 5.0 V8 Authorization | 5.0 | https://raw.githubusercontent.com/OWASP/ASVS/master/5.0/en/0x17-V8-Authorization.md | 工程标准 | 改造后采纳 | 授权只授予明确许可的消费者，落实最小权限并要求显式权限，可支撑主体-资源-动作矩阵与默认拒绝；矩阵字段格式不在原文。 | MXV2-PD-79 | 部分 |
+| S-111 | W3C i18n Text Size | 2007-07-03，2016-02-01 编辑 | https://www.w3.org/International/articles/article-text-size/ | 需求与设计 | 改造后采纳 | 翻译后文本长度会变化，英文短串到意大利语可扩张 200–300%，支持预留扩展空间；30% 只是保守下限，禁拼接句不在原文。 | MXV2-PD-67 | 部分 |
+| S-112 | Unicode CLDR Plural Rules | 文档，2026-11-28 读取 | https://cldr.unicode.org/index/cldr-spec/plural-rules | 测试 | 改造后采纳 | 不同语言的复数形态与 zero/one/two/few/many/other 分类可支撑复数用例；日期、货币与时区格式不在本页。 | MXV2-QA-70 | 部分 |
 ## 合并与缺项说明
 
 - WCAG 2.2 在原表占十一行，总表合并为 S-048，十一条准则的逐条判据见 `docs/framework/v2/sources/product-design.md` 第 3 节；合并后仍按“部分可脚本化”记，因为对比度、目标尺寸、名称角色值可脚本核对，替代文本等价性与焦点可见性需人工评审。
 - WAI-ARIA Authoring Practices 在原表占三行（手风琴、对话框、标签页），总表合并为 S-049，逐条 role 与键盘行为见同文件第 3 节。
-- `skills.md` 已到位（216 行、22 条链接），S-079 至 S-100 按该表判定，无“未到”占位。若后续补入第七份之外的来源，按同一编号规则追加 S-101 起，并同步更新本节统计。
+- `skills.md` 已到位（216 行、22 条链接），S-079 至 S-112 按该表判定，无“未到”占位。若后续补入第七份之外的来源，按同一编号规则追加 S-113 起，并同步更新本节统计。
