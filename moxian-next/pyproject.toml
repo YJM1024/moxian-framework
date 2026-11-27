@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdd-framework"
+version = "0.1.3"
+description = "Role guides and evidence checks for software delivery"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[project.scripts]
+sdd = "sdd.cli:main"
+
+[tool.setuptools]
+packages = ["sdd"]
+include-package-data = false
+
+[tool.setuptools.package-data]
+sdd = ["roles/*.md", "skills/spec-driven-delivery/SKILL.md"]

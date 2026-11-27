@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>通知偏好</title>
+    <style>
+      body {
+        margin: 0;
+        background: #f3f5f1;
+        color: #172c25;
+        font: 1rem/1.5 system-ui, sans-serif;
+      }
+      main {
+        max-width: 32rem;
+        margin: 3rem auto;
+        padding: 0 1rem;
+      }
+      label {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        min-height: 2.75rem;
+      }
+      input { accent-color: #245747; }
+      button {
+        min-height: 2.75rem;
+        padding: .4rem 1rem;
+        border: 0;
+        border-radius: .35rem;
+        background: #245747;
+        color: white;
+        font: inherit;
+      }
+      :focus-visible {
+        outline: 3px solid #1f54a5;
+        outline-offset: 3px;
+      }
+      [role="status"] { min-height: 1.5em; }
+    </style>
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>通知偏好</h1>
+      <p>此偏好保存在当前浏览器。</p>
+      <form>
+        <label>
+          <input type="checkbox" name="weeklyReminder">
+          接收每周提醒
+        </label>
+        <button type="submit">保存偏好</button>
+        <p role="status"></p>
+      </form>
+    </main>
+  </body>
+</html>

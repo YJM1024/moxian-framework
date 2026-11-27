@@ -1,0 +1,5 @@
+include examples/*/README.md
+include examples/reservations/*.go examples/reservations/go.mod
+include examples/sqlite-migration/*.sql examples/sqlite-migration/test_migration.py
+include examples/web-preferences/*.js examples/web-preferences/*.html examples/web-preferences/*.json
+recursive-include examples/web-preferences/tests *.js
