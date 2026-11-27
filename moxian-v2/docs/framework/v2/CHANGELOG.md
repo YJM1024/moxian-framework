@@ -2,6 +2,19 @@
 
 本文件记录框架规则册的结构性变更。日常条文修订登记在 `MOXIAN.md` 附录 C 与附录 D，不逐条抄到这里。
 
+## v2.1.0（2026-11-27）
+
+相对 v2.0.0 调整角色、变更文书、验收与自检方式，规则册从 158 条改为 147 条。
+
+- 角色：重定为产品、设计、架构、前端、后端、测试、项目经理七个；没有验收角色，没有第二人签字，没有 SIGN 表。
+- 完成确认：各角色对产物自证，产物落盘且证据路径可打开即置「已完成」；项目经理维护 `docs/process/FLOW-POINTS.md`，按需求、设计、架构、开发、测试五类流程点落状态，状态取未开始、进行中、已完成、阻塞、已取消。
+- 变更 spec：改为六份角色 spec，产品视角写 product.md、design.md、frontend.md、backend.md、test.md 五份，技术视角写 tech.md、涉及侧的前后端 spec 与 test.md；proposal.md、spec.md、tasks.md、test-plan.md、evidence.md、closure.md 不再进包。
+- 验收：每个变更一份四节验收报告，由项目经理在收口阶段写，按功能点分节，不设行数上限；第 2 节只引程序产物路径与一行 pass/fail，不抄测试数字。
+- 自检：取消全部文档门禁与证据索引，不设 G-xx 检查项；`scripts/` 只保留五个自检工具，四个 v2.0 门禁脚本移入 `docs/framework/archive/scripts/`。
+- 复盘：每个变更一份，由产品写，项目经理可代写，不超过 40 行，落 `docs/plan/RETRO-<YYYYMMDD>-<REQ-ID>.md`。
+- 规则：158 条改 147 条，废止 20 条、改写 40 条、新增 9 条、沿用 98 条，标题 167 个；废止条保留原编号，不复用空号。
+- 模板：现行 35 份，已废止 7 份；新增六份 spec 模板与四节 accept.md，delivery.md 移入 `templates/archive/`。
+
 ## v2.0.0（2026-11-27，变更包 CHG-FW-002）
 
 ### 结构

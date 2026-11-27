@@ -1,85 +1,49 @@
-﻿# 墨线框架入口
+# 墨线框架入口
 
-框架版本 `v2.0.0`，版本号以 `VERSION` 为准，本页不重复写数字。这一页回答三个问题：每个文件管什么，门禁怎么跑，出问题怎么回滚。
+框架版本以根目录 `VERSION` 为准，当前为 `v2.1.0`。本页回答四个问题：每个文件管什么，一次变更怎么走，脚本怎么用，出问题怎么回滚。
 
 ## 1 目录与职责
 
 框架顶层九个文件，各自只有一个职责，条文只在 `MOXIAN.md` 写一次。
 
-表 1-1 九个文件
-
 | 文件 | 职责 | 什么时候读 |
 |---|---|---|
-| `MOXIAN.md` | 九章一百五十八条规则，范围、术语、角色、流程、任务类型、规则格式、门禁、验收、异常与回滚 | 任何需要判据与条文的时候 |
-| `TASK-MATRIX.md` | 八类任务乘六个阶段的取值、动作、模板与门禁，附六十六格映射 | 任务开工前判类型与取动作 |
-| `ROLES.md` | 七个角色的可写范围、禁止事项与交接要求 | 派单、交接、签字前 |
-| `EFFORT.md` | 四档投入、四十八格档位表、取档与降档规则 | 派单写档位时 |
-| `GATES.md` | 门禁条目、规则归位、脚本对应、二十四条人工判据与未决项 | 跑门禁、核对判据时 |
-| `ADOPTION.md` | 存量项目迁移到 v2 的步骤与判据 | 接入既有项目时 |
+| `MOXIAN.md` | 九章规则册，现行 147 条，另有 20 条废止条保留原编号；讲流程点、角色、规格分层、测试、验收与回滚 | 需要规则与验收标准时 |
+| `TASK-MATRIX.md` | 八类任务与执行要求 | 任务开工前判类型 |
+| `ROLES.md` | 七个角色的可写范围、禁止事项与交接要求 | 派单、交接、自证前 |
+| `EFFORT.md` | 四档投入与取档规则 | 派单写档位时 |
+| `GATES.md` | 自检脚本索引；框架不设门禁 | 想跑脚本自检时 |
+| `ADOPTION.md` | 存量项目迁移到 v2.1 的步骤 | 接入既有项目时 |
 | `VERSION` | 当前版本号，一行 | 任何引用版本的地方 |
 | `v2/CHANGELOG.md` | 版本变更记录与差异摘要 | 升级、回滚、对外说明时 |
 | `README.md` | 本页，入口与导航 | 第一次进入框架时 |
 
-子目录五个：`v2/` 放设计（施工步骤在 `DESIGN.md` 的「怎么实施」节）、日志、回滚与来源，索引见 `v2/README.md`；`adapters/` 放适配层；`domains/` 放各域增量；`templates/` 放模板；`archive/` 放历史版本副本。
+子目录八个：`v2/` 放设计、施工、日志、回滚与来源（35 份）；`adapters/` 放适配层（2 份）；`domains/` 放各域增量（4 份）；`templates/` 放模板（44 份）；`archive/` 放历史版本与归档脚本（100 份）；`appendix/` 放附录（4 份）；`absorb/` 放吸收记录（4 份）；`accept/` 放历史验收记录（24 份）。
 
-九个文件的关系是引用关系，不是复制关系。矩阵、角色、档位与门禁都指向 `MOXIAN.md` 的规则位，改条文只改一处。
+## 2 九章与七个角色
 
-## 2 九章一览
+九章依次为目的与范围、术语与编号、角色与授权、流程点链、规格分层、规则格式、测试与证据、验收与发布、异常与回滚。现行 147 条，编号形如 `MXV2-4-25`；废止条保留原编号，正文写明失效原因与替代条，不复用空号。
 
-| 章 | 主题 | 条数 |
-|---|---|---|
-| 第 1 章 | 目的、范围与自证 | 12 |
-| 第 2 章 | 术语、编号与状态 | 14 |
-| 第 3 章 | 角色与授权 | 16 |
-| 第 4 章 | 流程点链与流转 | 24 |
-| 第 5 章 | 任务类型与规格分层 | 18 |
-| 第 6 章 | 规则格式与判定 | 18 |
-| 第 7 章 | 门禁与证据 | 22 |
-| 第 8 章 | 验收与发布 | 18 |
-| 第 9 章 | 异常、回滚与复盘 | 16 |
-| 附录 A 至附录 D | 模板索引、旧号索引、修订登记、未决项 | 不计入条数 |
+七个角色是产品、设计、架构、前端、后端、测试、项目经理。六个执行者对各自产物自证，产物落盘且证据路径可打开即置「已完成」；项目经理维护 `docs/process/FLOW-POINTS.md`，收口时汇总验收报告，不写 spec、代码与测试，也不做第二人复核。没有验收角色，没有 SIGN 表。
 
-合计一百五十八条。附录 D 的六条是暂不立规的机制条款，单独计数，不与正文混算。
+## 3 一次变更怎么走
 
-## 3 怎么跑门禁
+1. 分配变更号，在 `specs/changes/<CHG-ID>/` 下按角色写 spec：产品写 `product.md`、`design.md`、`frontend.md`、`backend.md`、`test.md`，架构另写 `tech.md`。`proposal.md`、`spec.md`、`tasks.md`、`test-plan.md`、`evidence.md`、`closure.md` 不再进包。
+2. 流程点按需求、设计、架构、开发、测试五类成链，状态取未开始、进行中、已完成、阻塞、已取消，记在 `specs/changes/<CHG-ID>/flow-points.md`。
+3. 开发前由设计 owner 自检并冻结，冻结提交写进各 spec 首部。
+4. 实现与测试阶段跑全量测试，单元与集成覆盖率各不低于 95%，以覆盖率报告为准。
+5. 收口由项目经理写一份四节验收报告 `docs/testing/ACCEPT-<CHG-ID>-<YYYYMMDD>.md`：变更集、测试结果产物路径与一行 pass/fail、问题与处置、结论两条。复盘由产品写、项目经理可代写，一份 `docs/plan/RETRO-<YYYYMMDD>-<REQ-ID>.md`，不超过 40 行。
 
-门禁按三个时机跑，命令只有一条汇总入口，单门禁可以单独跑。
+## 4 脚本怎么用
 
-```
-node scripts/verify-all.mjs --stage pre     # 提交前：结构、追溯、语言、契约、规则卡、册内自证
-node scripts/verify-all.mjs --stage point   # 点级：pre 全部加增量覆盖与证据门
-node scripts/verify-all.mjs --stage exit    # 出口级：全部门禁加真机与安装路径
-```
+框架不设门禁，`scripts/` 只保留五个自检工具：`check-spec-language.mjs`、`check-trace.mjs`、`check-incremental-coverage.mjs`、`measure-perf.mjs`、`measure-net.mjs`。每个都能单独运行，加 `--self-test` 用内置夹具自检。退出码非 0 时由 owner 判断，不阻断发版。
 
-单门禁示例：
+v2.0 的四个门禁脚本已移到 `docs/framework/archive/scripts/`，不参与现行检查，原因见 `GATES.md` 第 3 节。
 
-```
-node scripts/check-gates.mjs --stage pre --change CHG-FW-002
-```
+## 5 怎么回滚
 
-退出码 0 为通过，非 0 为阻断。失败时先看第一个非 0 的门禁，修完再跑整条，不在多个失败之间来回跳。
-
-脚本一组十八个，全部已建并可跑：`check-mapping.mjs`、`check-points.mjs`、`check-rule-fields.mjs`、`check-archive.mjs`、`check-docs.mjs`、`check-visual-baseline.mjs`、`check-spec-language.mjs`、`check-trace.mjs`、`check-gates.mjs`、`check-evidence.mjs`、`ac-coverage.mjs`、`check-matrix-coverage.mjs`、`check-contract.mjs`、`measure-perf.mjs`、`run-ac.mjs`、`check-incremental-coverage.mjs`、`check-fp-coverage.mjs`、`probe-cdp.mjs`。总册一百五十八条按执行手段分为 script 四十五条与 ai-review 一百一十三条，人工判定按下一段四要素记录，清单见 `GATES.md` 第 2 节。
-
-ai-review 一百一十三条的判定人、判据落点与旧号归宿见 `GATES.md` 第 3 节。人工判定记录写四要素：规则位、判据、结论、核对人与时间，结论只写通过或待补。
-
-## 4 怎么回滚
-
-回滚分四类，先看改动处在哪一层，再选动作。用户可感知的回滚以恢复可用为准，不以恢复文件为准。
-
-未提交的单文件改动，用 `git restore -- <文件>` 恢复。已提交未推送，用 `git revert <提交号>` 生成反向提交。已推送同样用 `git revert`，不改写历史。运行时开关引起的故障，先关开关再回滚代码，关闭前写五项：开关名、影响范围、关闭后的降级行为、验证方式、恢复条件。
-
-回滚之后做三步：跑一次复验命令，确认指标回到基线；把回滚原因、影响面、恢复时间写进异常记录；把结论回写到变更包、证据索引、复盘与决策记录四处。禁止 `git reset --hard`、`git clean -fdx` 与 `git push --force`（MXV2-9-01）。回滚点、回滚命令与复验输出三项必须可查，缺一项按回滚不可用处理。
-
-## 5 怎么用
-
-1. 查 `TASK-MATRIX.md` 判任务类型与六个阶段的动作，档位按 `EFFORT.md` 取。
-2. 按 `MOXIAN.md` 第 4 章建变更包、拆点链、写派单卡，按 `ROLES.md` 找 owner。
-3. 按第 7 章跑门禁，按第 8 章验收与放行，出问题按第 9 章回滚与复盘。
+回滚分四类，先看改动处在哪一层。未提交的单文件改动用 `git restore -- <文件>`；已提交未推送用 `git revert <提交号>`；已推送同样用 `git revert`，不改写历史。运行时开关引起的故障先关开关，再回滚代码。禁止 `git reset --hard`、`git clean -fdx` 与 `git push --force`。回滚后跑一次复验命令，把原因、影响面与恢复时间写进异常记录。
 
 ## 6 版本与维护
 
-版本号只有 `VERSION` 一处，变更记录只有 `v2/CHANGELOG.md` 一处，条数与门禁计数只有 `MOXIAN.md` 一处（MXV2-1-09）。改条文登记附录 D，改规则卡登记附录 C，改角色卡登记附录 D。新增规则先写判据，再写执行手段，写不出判据的进附录 D，不硬凑条目。
-
-旧版 v1.7.5 的副本在 `archive/v1.7.5/`，只读。旧号到新位的索引在 `MOXIAN.md` 附录 B，查历史引用时用索引，不在正文恢复旧号。
-
+版本号只有 `VERSION` 一处，变更记录只有 `v2/CHANGELOG.md` 一处，条数口径只有 `MOXIAN.md` 一处。旧版 v1.7.5 的副本在 `archive/v1.7.5/`，只读；v1.7.3 在 `archive/v1.7.3/`。查旧号到新位的索引时按归档原文读，不在现行正文恢复旧号。

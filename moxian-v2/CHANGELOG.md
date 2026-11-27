@@ -2,13 +2,13 @@
 
 本文件汇总墨线框架从 v1.0 到 v2.0.0 的版本演进。v1.x 条目取自源仓 `docs/framework/README.md` 的版本说明与 `docs/framework/MOXIAN.md` 附录 D 表 D-2，v2.0.0 条目取自 `docs/framework/v2/CHANGELOG.md` 与本次迁移记录，日期沿用原记录，均为 2026 年。
 
+v2.1.0 的变更见 `docs/framework/v2/CHANGELOG.md` 的 v2.1.0 条目，本文件不重复。
+
 ## v2.0.0（2026-11-27）
 
 框架正文迁入独立仓的版本。规则册从十三章加附录改为九章加附录 A 至附录 D，条目从 285 条收到 158 条：改写 203 条、合并 56 条、保留 23 条、删除 3 条，118 条被吸收后不再单独成条；每条改为规则、判据、执行、层级、依据、适用六字段，执行字段取 `script:` 或 `ai-review:` 两种写法。角色从 8 个收到 7 个并新增调研员，需求点与任务卡的状态统一为草稿、已冻结、实现中、通过四值。原无判据的 24 条门禁全部归位，14 条转脚本、10 条转人工，零旁路；门禁脚本共 18 个。旧号到新位的索引写在总册附录 B，存量变更包继续有效，迁移步骤见 `docs/framework/ADOPTION.md`。
 
 仓结构同期调整：v2 之前的文件整体移入 `docs/framework/archive/v1.7.3/`，主仓归档的十二章副本落在 `docs/framework/archive/v1.7.5/`，v2 正文按主仓原路径放在 `docs/framework/` 下，条文里的 `docs/framework/…` 自引用因此不再需要换算。`VERSION` 升到 `v2.0.0`。v1.7.3 时期随仓的 `scripts/` 与 `examples/` 原样保留，v2 正文不依赖它们。
-
-同日按 `docs/framework/v2/CUT-PLAN.md` 削减文书：v2 过程文档从 17 件收到 12 件，`IMPLEMENT.md` 全文并入 `DESIGN.md` 的「怎么实施」节，七份来源采集表合订为 `sources/SOURCES-RAW.md`，变更包六件并两件，域规则从 244 条降到 110 条，规则字段从六字段收到四字段。撤下的文稿存 `docs/framework/archive/v2-cut-20261127/`。格式类检查移出验收、只在 `--stage pre-commit` 跑，并新增 `check-format.mjs` 与 `check-contract-coverage.mjs` 两份补充检查。
 
 ## v1.7.3（2026-11-25）
 

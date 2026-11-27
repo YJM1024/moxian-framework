@@ -1,3 +1,5 @@
+v2.0 模板，v2.1 起废止，仅作 v2.0 历史包对照
+
 # 证据索引模板
 
 本模板登记一个变更内的全部证据，供验收签字、收口对账与复盘取数使用。模板有两处用法：变更包的 `specs/changes/<CHG-ID>/evidence.md` 用本文的登记表登记本轮证据，验收轮次的 `docs/testing/EVIDENCE-<域>-<YYYYMMDD>.md` 用同一张表并按轮次追加。字段、类型与判定值以 `docs/framework/MOXIAN.md` 表 9-2 为唯一来源，七种原因码的写法以 `docs/framework/domains/testing.md` 第 8 节为准，本文不另立字段或码表。
