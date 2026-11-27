@@ -8,6 +8,8 @@
 
 仓结构同期调整：v2 之前的文件整体移入 `docs/framework/archive/v1.7.3/`，主仓归档的十二章副本落在 `docs/framework/archive/v1.7.5/`，v2 正文按主仓原路径放在 `docs/framework/` 下，条文里的 `docs/framework/…` 自引用因此不再需要换算。`VERSION` 升到 `v2.0.0`。v1.7.3 时期随仓的 `scripts/` 与 `examples/` 原样保留，v2 正文不依赖它们。
 
+同日按 `docs/framework/v2/CUT-PLAN.md` 削减文书：v2 过程文档从 17 件收到 12 件，`IMPLEMENT.md` 全文并入 `DESIGN.md` 的「怎么实施」节，七份来源采集表合订为 `sources/SOURCES-RAW.md`，变更包六件并两件，域规则从 244 条降到 110 条，规则字段从六字段收到四字段。撤下的文稿存 `docs/framework/archive/v2-cut-20261127/`。格式类检查移出验收、只在 `--stage pre-commit` 跑，并新增 `check-format.mjs` 与 `check-contract-coverage.mjs` 两份补充检查。
+
 ## v1.7.3（2026-11-25）
 
 维护版。推理档位口径按 DEC-34 收窄：`max` 只保留变更级整线签发、P0 级根因裁定、框架版本冻结与独立验收、跨变更架构裁决四类场合，单卡实现、日常验收复核、规格冻结与契约复核、修复复查与文档体系整改改取 `high`；`EFFORT.md` 主表 48 格由 max 19 / high 24 / low 4 / off 1 改为 max 4 / high 39 / low 4 / off 1，P0 出现时可按 MX-E-02 临时升档。`ROLES.md` 表 1 与第 14 节、`GATES.md` MX-G-49、`TASK-MATRIX.md` 变更记录、`MOXIAN.md` 第 4 章与 MX-7-08 同步，两份模板与 DeepSeek 适配层措辞同批修改。章级规则 284 条、角色规则 42 条、门禁规则 68 条与编号均未变，四道门禁实跑全 PASS（结构 120 项、矩阵 66/66、契约 7/7、追溯 684 项）。本轮为维护性口径调整，不单写验收报告。

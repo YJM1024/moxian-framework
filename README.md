@@ -40,7 +40,7 @@ moxian-framework/
 └─ examples/              v1.7.3 时期的参考输入与验收记录
 ```
 
-`docs/framework/archive/` 下有两份历史快照：`v1.7.3/` 是本仓 v2 之前的全部文档，`v1.7.5/` 是主仓归档的十二章正文副本与索引，两者都按搬迁时的字节原样保留。
+`docs/framework/archive/` 下有三份历史副本：`v1.7.3/` 是本仓 v2 之前的全部文档，`v1.7.5/` 是主仓归档的十二章正文副本与索引，`v2-cut-20261127/` 是 2026-11-27 文书削减时撤下的 v2 过程文稿（`IMPLEMENT.md` 与七份来源采集表，去向见 `docs/framework/v2/CUT-PLAN.md`）。三者都按搬迁时的字节原样保留。
 
 ## 怎么用
 
@@ -80,8 +80,10 @@ v2.0.0 是对 v1.7.5 的结构性重写，不是增量修订。规则册从十�
 
 ## 已知边界
 
-`scripts/` 与 `examples/` 是 v1.7.3 时期随仓带入的存量件，按当时平铺的 `docs/` 布局读取文件，v2 正文不依赖它们。v2 的十八个门禁脚本目前由接入仓（主仓 simo）维护，尚未复制进本仓；接入仓执行门禁时用 `SIMO_FRAMEWORK_ROOT` 指向本仓，即可读到 v2 的条文与模板。
+`scripts/` 与 `examples/` 是 v1.7.3 时期随仓带入的存量件，按当时平铺的 `docs/` 布局读取文件，v2 正文不依赖它们。v2 的二十个脚本（十八道门禁加 `check-format.mjs` 格式体检与 `check-contract-coverage.mjs` 合同覆盖补充检查）目前由接入仓（主仓 simo）维护，尚未复制进本仓；接入仓执行门禁时用 `SIMO_FRAMEWORK_ROOT` 指向本仓，即可读到 v2 的条文与模板。
 
-`docs/framework/archive/` 下的两份历史快照只读，不参与 v2 的判定，内部链接按各自当时的布局解释。
+格式类检查在 v2 里只在 `--stage pre-commit` 跑，`--stage exit` 不判格式，出口判据只剩内容与证据；改动前可先用 `check-format.mjs` 做一次性体检，它只出问题清单，不作为验收打回理由。
+
+`docs/framework/archive/` 下的三份历史副本只读，不参与 v2 的判定，内部链接按各自当时的布局解释。
 
 许可沿用源仓的 MIT 许可，见 `LICENSE`；如需更换许可方式，应先取得著作权人确认。
